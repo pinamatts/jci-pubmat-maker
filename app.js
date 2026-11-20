@@ -23,7 +23,7 @@ const THEMES = {
 
 const EXAMPLE = {
   chip: 'Impact Immersion', kicker: 'JCI Cebu community project', h1: 'Medical', h2: 'Mission', theme: 'sky',
-  date: '2026-11-22', t1: '07:30', t2: '12:30', venue: 'Tabunok Central Elementary School', area: 'Tabunok, Talisay City', outfit: 'White Community Shirt',
+  date: '2026-11-22', t1: '07:30', t2: '12:30', venue: 'Tabunok Central Elementary School', area: 'Tabunok, Talisay City', meet: '', outfit: 'White Community Shirt',
   partners: 'My Mountain Mover and its Greater Heights Foundation', pLabel: 'In partnership with',
   hz: 100, hx: 50, hy: 35, tag: 'Care in action',
   recOn: true, ry: 30, rLabel: 'On the record', rTitle: 'From San Remigio\nto Tabunok.', rBody: 'Our Impact Immersion went north in May 2025. This Sunday, it comes to Talisay City.',
@@ -31,7 +31,7 @@ const EXAMPLE = {
 };
 const BLANK = {
   chip: 'Community project', kicker: 'JCI Cebu', h1: 'Project', h2: 'Title', theme: 'sky',
-  date: '', t1: '', t2: '', venue: '', area: '', outfit: '', partners: '', pLabel: 'In partnership with',
+  date: '', t1: '', t2: '', venue: '', area: '', meet: '', outfit: '', partners: '', pLabel: 'In partnership with',
   hz: 100, hx: 50, hy: 40, tag: '', recOn: false, ry: 40, rLabel: 'On the record', rTitle: '', rBody: '',
   band: 'See you', bandHi: 'there!', hashtag: 'JCICebu',
 };
@@ -148,12 +148,18 @@ function drawLeft(T, fs, g, draw) {
   }
 
   const d = fmtDate(state.date), t = fmtTime(state.t1, state.t2), v = (state.venue || '').trim(), a = (state.area || '').trim();
-  if (d || t || v || a) {
+  if (d || t || v || a || (state.meet || '').trim()) {
     y += 26 * g; const y0 = y, bx = x + 28; y += 4;
     if (d) { F(800, 32); if (draw) { ctx.fillStyle = T.ink; txt(d, bx, y + 31, -.3); } y += 40; }
     if (t) { F(700, 26); if (draw) { ctx.fillStyle = T.accent; txt(t, bx, y + 25); } y += 34; }
     if (v) { y += 10; F(700, 22); for (const l of wrap(v, 500)) { if (draw) { ctx.fillStyle = T.ink; txt(l, bx, y + 21); } y += 30; } }
     if (a) { if (!v) y += 10; F(500, 22); for (const l of wrap(a, 500)) { if (draw) { ctx.fillStyle = T.muted; txt(l, bx, y + 21); } y += 30; } }
+    const m = (state.meet || '').trim();
+    if (m) {
+      y += 10; F(800, 13); const lab = 'MEETING PLACE';
+      if (draw) { ctx.fillStyle = T.accent; txt(lab, bx, y + 11, 2.6); } y += 13 + 8;
+      F(600, 21); for (const l of wrap(m, 500)) { if (draw) { ctx.fillStyle = T.ink; txt(l, bx, y + 20); } y += 28; }
+    }
     y += 4; if (draw) { ctx.fillStyle = T.rule; ctx.fillRect(x, y0, 6, y - y0); }
   }
 
@@ -276,6 +282,7 @@ function caption() {
   if (d) lines.push('📅 ' + d);
   if (t) lines.push('🕢 ' + t);
   if (place) lines.push('📍 ' + place);
+  if ((state.meet || '').trim()) lines.push('🤝 Meeting place: ' + state.meet.trim());
   if ((state.outfit || '').trim()) lines.push('👕 Outfit: ' + state.outfit.trim());
   const close = [state.band, state.bandHi].map(s => (s || '').trim()).filter(Boolean).join(' ');
   if (close) lines.push('', close);
