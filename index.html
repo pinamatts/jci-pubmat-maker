@@ -54,12 +54,27 @@ input[type=range]{width:100%}
 footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#fff;color:#130F2D;font-weight:700;padding:10px 16px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
+[hidden]{display:none !important}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.modes label{display:block;cursor:pointer}
+.modes input{position:absolute;opacity:0}
+.modes span{display:block;border:2px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--panel2)}
+.modes b{display:block;font-size:16px;color:var(--ink)}
+.modes small{display:block;margin-top:2px}
+.modes input:checked+span{border-color:var(--yellow);background:#1d2f5e}
+.modes input:focus-visible+span{outline:3px solid var(--yellow);outline-offset:2px}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.photos figure{margin:0;background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.photos img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.photos div{display:flex;flex-wrap:wrap;gap:6px;padding:8px}
+.photos button{padding:4px 10px;min-height:32px;font-size:13px}
+.photos .big{font-size:12px;font-weight:800;color:#130F2D;background:var(--yellow);border-radius:999px;padding:5px 10px}
 </style>
 </head>
 <body>
 <header>
   <h1>JCI Cebu Pubmat Maker</h1>
-  <p>Fill in your project, add a photo, and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
+  <p>Make an <strong>announcement</strong> before your project or a <strong>project done</strong> recap with action photos after it. Fill in the form and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
 </header>
 <main>
   <section class="preview" aria-label="Preview">
@@ -74,6 +89,14 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
 
   <form id="f" autocomplete="off">
     <fieldset>
+      <legend>What are you making?</legend>
+      <div class="modes" role="radiogroup">
+        <label><input type="radio" name="mode" value="announce"><span><b>📣 Announcement</b><small>before the project: date, time, venue, outfit</small></span></label>
+        <label><input type="radio" name="mode" value="recap"><span><b>✅ Project done</b><small>after the project: action photos and numbers</small></span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
       <legend>Project</legend>
       <label>Project label <small>the dark pill at the top</small><input type="text" name="chip" maxlength="32"></label>
       <label>Small line above the title<input type="text" name="kicker" maxlength="40"></label>
@@ -85,19 +108,20 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
         <div style="font-weight:600;font-size:14px;color:#d5def0;margin-bottom:6px">Colour</div>
         <div class="themes" id="themes"></div>
       </div>
+      <label>Sticker on the photo <small>defaults to “Gratitude in Motion”, our 79th-year theme (SALAMAT). Keep it unless the project chair asks otherwise; clear it to hide.</small><input type="text" name="tag" maxlength="22"></label>
     </fieldset>
 
     <fieldset>
       <legend>When and where</legend>
       <div class="row">
         <label>Date<input type="date" name="date"></label>
-        <label>Starts<input type="time" name="t1"></label>
-        <label>Ends<input type="time" name="t2"></label>
+        <label data-only="announce">Starts<input type="time" name="t1"></label>
+        <label data-only="announce">Ends<input type="time" name="t2"></label>
       </div>
       <label>Venue<input type="text" name="venue" maxlength="60"></label>
       <label>Area or city<input type="text" name="area" maxlength="60"></label>
-      <label>Meeting place <small>where the team meets before going; leave empty to hide</small><input type="text" name="meet" maxlength="60"></label>
-      <label>Outfit <small>leave empty to hide</small><input type="text" name="outfit" maxlength="34"></label>
+      <label data-only="announce">Meeting place <small>where the team meets before going; leave empty to hide</small><input type="text" name="meet" maxlength="60"></label>
+      <label data-only="announce">Outfit <small>leave empty to hide</small><input type="text" name="outfit" maxlength="34"></label>
     </fieldset>
 
     <fieldset>
@@ -108,7 +132,22 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
       <div class="logos" id="logoList"></div>
     </fieldset>
 
-    <fieldset>
+    <fieldset data-only="recap">
+      <legend>Action photos</legend>
+      <div class="file"><label>Photos <small>up to 6; pick several at once. The first one shows big. Check that everyone in them is OK to post.</small><input type="file" id="photosIn" accept="image/*" multiple></label></div>
+      <p class="note" style="margin:0">Added: <span id="photoCount">none yet</span></p>
+      <div class="photos" id="photoList"></div>
+    </fieldset>
+
+    <fieldset data-only="recap">
+      <legend>Numbers</legend>
+      <p class="note" style="margin:0">Real counts only, from the project chair. Leave a pair empty to hide it; leave all empty for no number box.</p>
+      <div class="row"><label>Number 1<input type="text" name="s1n" maxlength="8" inputmode="numeric"></label><label>What it counts<input type="text" name="s1l" maxlength="30"></label></div>
+      <div class="row"><label>Number 2<input type="text" name="s2n" maxlength="8" inputmode="numeric"></label><label>What it counts<input type="text" name="s2l" maxlength="30"></label></div>
+      <div class="row"><label>Number 3<input type="text" name="s3n" maxlength="8" inputmode="numeric"></label><label>What it counts<input type="text" name="s3l" maxlength="30"></label></div>
+    </fieldset>
+
+    <fieldset data-only="announce">
       <legend>Main photo</legend>
       <div class="file"><label>Photo<input type="file" id="heroIn" accept="image/*"></label></div>
       <div class="row">
@@ -116,10 +155,9 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
         <label>Left / right<input type="range" name="hx" min="0" max="100"></label>
         <label>Up / down<input type="range" name="hy" min="0" max="100"></label>
       </div>
-      <label>Sticker on the photo <small>defaults to “Gratitude in Motion”, our 79th-year theme (SALAMAT). Keep it unless the project chair asks otherwise; clear it to hide.</small><input type="text" name="tag" maxlength="22"></label>
     </fieldset>
 
-    <fieldset>
+    <fieldset data-only="announce">
       <legend>Second photo panel</legend>
       <label class="switch"><input type="checkbox" name="recOn" switch> Show the panel at the bottom</label>
       <div class="file"><label>Photo<input type="file" id="recIn" accept="image/*"></label></div>

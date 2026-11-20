@@ -21,7 +21,9 @@ const THEMES = {
            band: '#1F4789', bandAccent: '#57BCBC', bandSub: '#c9d6e8', tag: '#fff', tagInk: '#130F2D' },
 };
 
+const STATS0 = { s1n: '', s1l: '', s2n: '', s2l: '', s3n: '', s3l: '' };
 const EXAMPLE = {
+  mode: 'announce', ...STATS0,
   chip: 'Impact Immersion', kicker: 'JCI Cebu community project', h1: 'Medical', h2: 'Mission', theme: 'sky',
   date: '2026-11-22', t1: '07:30', t2: '12:30', venue: 'Tabunok Central Elementary School', area: 'Tabunok, Talisay City', meet: '', outfit: 'White Community Shirt',
   partners: 'My Mountain Mover and its Greater Heights Foundation', pLabel: 'In partnership with',
@@ -30,20 +32,38 @@ const EXAMPLE = {
   band: 'See you in', bandHi: 'Tabunok!', hashtag: 'ImpactImmersion',
 };
 const BLANK = {
+  mode: 'announce', ...STATS0,
   chip: 'Community project', kicker: 'JCI Cebu', h1: 'Project', h2: 'Title', theme: 'sky',
   date: '', t1: '', t2: '', venue: '', area: '', meet: '', outfit: '', partners: '', pLabel: 'In partnership with',
   hz: 100, hx: 50, hy: 40, tag: 'Gratitude in motion', recOn: false, ry: 40, rLabel: 'On the record', rTitle: '', rBody: '',
   band: 'See you', bandHi: 'there!', hashtag: 'JCICebu',
 };
 
+const RECAP_EXAMPLE = {
+  ...BLANK, mode: 'recap', chip: 'Impact Immersion', kicker: 'Mission accomplished', h1: 'Project', h2: 'Title', theme: 'sky',
+  date: '', venue: 'Venue', area: 'City', pLabel: 'Thank you to our partners', tag: 'Gratitude in motion',
+  band: 'SALAMAT to everyone', bandHi: 'who joined!', hashtag: 'ImpactImmersion',
+  s1n: '000', s1l: 'residents served', s2n: '00', s2l: 'volunteers', s3n: '0', s3l: 'partners',
+};
+const MODE_DEFAULTS = {
+  announce: { kicker: 'JCI Cebu community project', band: 'See you', bandHi: 'there!', pLabel: 'In partnership with' },
+  recap: { kicker: 'Mission accomplished', band: 'SALAMAT to everyone', bandHi: 'who joined!', pLabel: 'Thank you to our partners' },
+};
 let state = { ...EXAMPLE };
-const images = { hero: null, rec: null, logos: [] }; // logos: [{src, draw}]
+const images = { hero: null, rec: null, logos: [], photos: [] }; // logos: [{src, draw}], photos: [{src, img}]
 const assets = {};
 let captionEdited = false;
 
 /* ---------- helpers ---------- */
 const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 const fileImg = file => loadImg(URL.createObjectURL(file));
+// Shrink big phone photos so six of them stay light on a phone.
+function shrink(img, max = 1600) {
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, k = Math.min(1, max / Math.max(w, h));
+  if (k === 1) return img;
+  const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height); return c;
+}
 const F = (w, s) => { ctx.font = `${w} ${s}px "Plus Jakarta Sans", system-ui, sans-serif`; };
 const hasLS = 'letterSpacing' in ctx;
 const len = t => [...t].length;
@@ -104,6 +124,33 @@ function prepLogo(img) {
 /* ---------- drawing ---------- */
 const SHIRT = new Path2D('M8 3 4 5 2 9l3 2 1-1v11h12V10l1 1 3-2-2-4-4-2c-.5 1.6-2 2.5-4 2.5S8.5 4.6 8 3Z');
 
+function drawPartners(T, x, y, g, draw, maxW0) {
+  const logos = images.logos;
+  if (logos.length) {
+    y += 22 * g; F(800, 13);
+    const lab = (state.pLabel || '').toUpperCase().trim();
+    if (lab) { if (draw) { ctx.fillStyle = T.label; txt(lab, x, y + 11, 2.9); } y += 13 + 10; }
+    let items = logos.map(l => { const im = l.draw, a = im.width / im.height, h = Math.min(70, 230 / a); return { im, w: h * a, h }; });
+    const gap = 42, total = items.reduce((s, it) => s + it.w, 0) + gap * (items.length - 1), maxW = T.dark ? maxW0 - 28 : maxW0;
+    if (total > maxW) { const k2 = maxW / total; items = items.map(it => ({ ...it, w: it.w * k2, h: it.h * k2 })); }
+    const rowH = Math.max(...items.map(it => it.h)), rowW = Math.min(total, maxW), pad = T.dark ? 14 : 0;
+    if (draw) {
+      if (T.dark) { ctx.fillStyle = '#fff'; rr(x, y, rowW + pad * 2, rowH + pad * 2, 14); ctx.fill(); }
+      let cx = x + pad;
+      items.forEach((it, i) => {
+        if (i) { ctx.fillStyle = T.divider; ctx.fillRect(cx + gap / 2 - 1, y + pad + rowH * .1, 2, rowH * .8); cx += gap; }
+        ctx.drawImage(it.im, cx, y + pad + (rowH - it.h) / 2, it.w, it.h); cx += it.w;
+      });
+    }
+    y += rowH + pad * 2;
+  } else if ((state.partners || '').trim()) {
+    y += 20 * g; F(700, 24);
+    const lines = wrap('with ' + state.partners.trim(), maxW0);
+    lines.forEach((l, i) => { if (draw) { ctx.fillStyle = T.accent; txt(l, x, y + 22); } y += 32; });
+  }
+  return y;
+}
+
 function drawLeft(T, fs, g, draw) {
   const x = 64; let y = 160;
   const chip = (state.chip || '').toUpperCase().trim();
@@ -123,29 +170,7 @@ function drawLeft(T, fs, g, draw) {
   F(800, fs);
   L.forEach((l, i) => { if (draw) { ctx.fillStyle = i === 1 ? T.accent : T.ink; txt(l, x, y + fs * .8, -.035 * fs); } y += fs * .94; });
 
-  const logos = images.logos;
-  if (logos.length) {
-    y += 22 * g; F(800, 13);
-    const lab = (state.pLabel || '').toUpperCase().trim();
-    if (lab) { if (draw) { ctx.fillStyle = T.label; txt(lab, x, y + 11, 2.9); } y += 13 + 10; }
-    let items = logos.map(l => { const im = l.draw, a = im.width / im.height, h = Math.min(70, 230 / a); return { im, w: h * a, h }; });
-    const gap = 42, total = items.reduce((s, it) => s + it.w, 0) + gap * (items.length - 1), maxW = T.dark ? 512 : 540;
-    if (total > maxW) { const k2 = maxW / total; items = items.map(it => ({ ...it, w: it.w * k2, h: it.h * k2 })); }
-    const rowH = Math.max(...items.map(it => it.h)), rowW = Math.min(total, maxW), pad = T.dark ? 14 : 0;
-    if (draw) {
-      if (T.dark) { ctx.fillStyle = '#fff'; rr(x, y, rowW + pad * 2, rowH + pad * 2, 14); ctx.fill(); }
-      let cx = x + pad;
-      items.forEach((it, i) => {
-        if (i) { ctx.fillStyle = T.divider; ctx.fillRect(cx + gap / 2 - 1, y + pad + rowH * .1, 2, rowH * .8); cx += gap; }
-        ctx.drawImage(it.im, cx, y + pad + (rowH - it.h) / 2, it.w, it.h); cx += it.w;
-      });
-    }
-    y += rowH + pad * 2;
-  } else if ((state.partners || '').trim()) {
-    y += 20 * g; F(700, 24);
-    const lines = wrap('with ' + state.partners.trim(), 540);
-    lines.forEach((l, i) => { if (draw) { ctx.fillStyle = T.accent; txt(l, x, y + 22); } y += 32; });
-  }
+  y = drawPartners(T, x, y, g, draw, 540);
 
   const d = fmtDate(state.date), t = fmtTime(state.t1, state.t2), v = (state.venue || '').trim(), a = (state.area || '').trim();
   if (d || t || v || a || (state.meet || '').trim()) {
@@ -181,9 +206,134 @@ function drawLeft(T, fs, g, draw) {
   return y;
 }
 
+function drawTag(T, x, y) {
+  const tag = (state.tag || '').toUpperCase().trim(); if (!tag) return;
+  F(800, 17); const w = tw(tag, 2.4) + 32;
+  ctx.save(); ctx.translate(x, y + 20); ctx.rotate(-2 * Math.PI / 180);
+  ctx.shadowColor = 'rgba(0,0,0,.18)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
+  ctx.fillStyle = T.tag; rr(0, -20, w, 40, 8); ctx.fill(); ctx.shadowColor = 'transparent';
+  ctx.fillStyle = T.tagInk; txt(tag, 16, 6.5, 2.4); ctx.restore();
+}
+
+function drawBandAndFooter(T) {
+  ctx.fillStyle = T.band; ctx.fillRect(0, CONTENT_BOTTOM, W, BAND_H);
+  const b1 = (state.band || '').trim(), b2 = (state.bandHi || '').trim(), mid = CONTENT_BOTTOM + BAND_H / 2 + 12;
+  let bs = 36; F(800, bs);
+  const bw = () => tw(b1 + (b1 && b2 ? ' ' : '')) + tw(b2);
+  const sub = ['JCI Cebu · 79th year', state.hashtag ? '#' + state.hashtag.replace(/^#/, '').replace(/\s+/g, '') : ''].filter(Boolean).join(' · ');
+  F(700, 20); const subW = tw(sub, 1.2);
+  F(800, bs); while (bw() + subW + 40 > W - 128 && bs > 22) { bs -= 2; F(800, bs); }
+  ctx.fillStyle = '#fff'; txt(b1 + (b1 && b2 ? ' ' : ''), 64, mid, -.3);
+  ctx.fillStyle = T.bandAccent; txt(b2, 64 + tw(b1 + (b1 && b2 ? ' ' : '')), mid, -.3);
+  F(700, 20); ctx.fillStyle = T.bandSub; txt(sub, W - 64 - subW, CONTENT_BOTTOM + BAND_H / 2 + 7, 1.2);
+  // confirmed-partners footer (locked)
+  if (assets.footer) ctx.drawImage(assets.footer, 0, FOOT_Y, W, H - FOOT_Y);
+  else { ctx.fillStyle = '#fff'; ctx.fillRect(0, FOOT_Y, W, H - FOOT_Y); }
+}
+
+function drawBase(T, dotsW) {
+  if (T.bg2) { const g = ctx.createLinearGradient(0, 0, 0, CONTENT_BOTTOM); g.addColorStop(0, T.bg); g.addColorStop(1, T.bg2); ctx.fillStyle = g; }
+  else ctx.fillStyle = T.bg;
+  ctx.fillRect(0, 0, W, CONTENT_BOTTOM);
+  ctx.fillStyle = T.dot;
+  for (let y = 13; y < CONTENT_BOTTOM * .6; y += 26) { ctx.globalAlpha = 1 - y / (CONTENT_BOTTOM * .6); for (let x = 13; x < dotsW; x += 26) { ctx.beginPath(); ctx.arc(x, y, 1.6, 0, 7); ctx.fill(); } }
+  ctx.globalAlpha = 1;
+}
+const drawStrip = T => { const strip = T.strip === 'white' ? assets.stripWhite : assets.stripNavy; if (strip) ctx.drawImage(strip, 64, 56, strip.width * 48 / strip.height, 48); };
+
+/* ----- "Project done" recap: title, numbers, and a grid of up to 6 action photos ----- */
+const GRIDS = {
+  1: [[0, 0, 1, 1]],
+  2: [[0, 0, .5, 1], [.5, 0, .5, 1]],
+  3: [[0, 0, .6, 1], [.6, 0, .4, .5], [.6, .5, .4, .5]],
+  4: [[0, 0, .5, .5], [.5, 0, .5, .5], [0, .5, .5, .5], [.5, .5, .5, .5]],
+  5: [[0, 0, .5, 1], [.5, 0, .25, .5], [.75, 0, .25, .5], [.5, .5, .25, .5], [.75, .5, .25, .5]],
+  6: [[0, 0, 1 / 3, .5], [1 / 3, 0, 1 / 3, .5], [2 / 3, 0, 1 / 3, .5], [0, .5, 1 / 3, .5], [1 / 3, .5, 1 / 3, .5], [2 / 3, .5, 1 / 3, .5]],
+};
+const statsList = () => [[state.s1n, state.s1l], [state.s2n, state.s2l], [state.s3n, state.s3l]].map(([n, l]) => [(n || '').trim(), (l || '').trim()]).filter(([n, l]) => n || l);
+
+function drawRecapHead(T, fs, g, draw, maxW) {
+  const x = 64; let y = 160;
+  const chip = (state.chip || '').toUpperCase().trim();
+  if (chip) {
+    F(800, 17); const w = tw(chip, 3) + 36 + 19;
+    if (draw) {
+      ctx.fillStyle = T.chipBg; rr(x, y, w, 42, 21); ctx.fill();
+      ctx.fillStyle = T.chipDot; ctx.beginPath(); ctx.arc(x + 22.5, y + 21, 4.5, 0, 7); ctx.fill();
+      ctx.fillStyle = T.chipInk; txt(chip, x + 37, y + 27.5, 3);
+    }
+    y += 42 + 22 * g;
+  }
+  const k = (state.kicker || '').toUpperCase().trim();
+  if (k) { F(700, 18); if (draw) { ctx.fillStyle = T.accent; txt('✓ ' + k, x, y + 15, 2.9); } y += 18 + 12 * g; }
+  F(800, fs);
+  [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).forEach((l, i) => { if (draw) { ctx.fillStyle = i === 1 ? T.accent : T.ink; txt(l, x, y + fs * .8, -.035 * fs); } y += fs * .94; });
+  const meta = [fmtDate(state.date), [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ')].filter(Boolean).join('  ·  ');
+  if (meta) { y += 14 * g; F(600, 22); wrap(meta, maxW).slice(0, 2).forEach(l => { if (draw) { ctx.fillStyle = T.muted; txt(l, x, y + 21); } y += 30; }); }
+  y = drawPartners(T, x, y, g * .8, draw, Math.min(maxW, 540));
+  return y;
+}
+
+function drawStats(T, draw) {
+  const st = statsList(); if (!st.length) return 0;
+  const px = 700, pw = 316, py = 156, inner = pw - 56;
+  F(600, 18); const blocks = st.map(([n, l]) => ({ n, lines: l ? wrap(l, inner).slice(0, 2) : [] }));
+  const hgt = 30 + blocks.reduce((s, b) => s + (b.n ? 64 : 0) + b.lines.length * 24, 0) + (blocks.length - 1) * 30 + 30;
+  if (draw) {
+    ctx.save(); ctx.shadowColor = 'rgba(10,40,80,.25)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 18;
+    const cg = ctx.createLinearGradient(px, py, px + pw, py + hgt); T.col.forEach((c, i) => cg.addColorStop(i / (T.col.length - 1), c));
+    ctx.fillStyle = cg; rr(px, py, pw, hgt, 26); ctx.fill(); ctx.restore();
+    ctx.save(); rr(px, py, pw, hgt, 26); ctx.clip(); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 3;
+    for (const r of [70, 130, 190]) { ctx.beginPath(); ctx.arc(px + pw + 20, py + hgt + 20, r, 0, 7); ctx.stroke(); } ctx.restore();
+    let y = py + 30;
+    blocks.forEach((b, i) => {
+      if (i) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(px + 28, y + 14, inner, 2); y += 30; }
+      if (b.n) { let ns = 60; F(800, ns); while (tw(b.n, -1.5) > inner && ns > 30) { ns -= 4; F(800, ns); } ctx.fillStyle = '#fff'; txt(b.n, px + 28, y + 52, -1.5); y += 64; }
+      F(600, 18); ctx.fillStyle = 'rgba(255,255,255,.94)'; b.lines.forEach(l => { txt(l, px + 28, y + 17); y += 24; });
+    });
+  }
+  return py + hgt;
+}
+
+function renderRecap(T) {
+  drawBase(T, W);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, CONTENT_BOTTOM); ctx.clip();
+  ctx.strokeStyle = T.dark ? 'rgba(255,255,255,.08)' : 'rgba(0,151,215,.10)'; ctx.lineWidth = 3;
+  for (const r of [140, 230, 320, 410]) { ctx.beginPath(); ctx.arc(W + 40, -40, r, 0, 7); ctx.stroke(); }
+  ctx.restore();
+  drawStrip(T);
+
+  const hasStats = statsList().length > 0, maxW = hasStats ? 600 : 952;
+  const statsBottom = drawStats(T, false);
+  F(800, 100);
+  const widest = Math.max(1, ...[state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).map(l => tw(l, -3.5)));
+  let fs = Math.min(hasStats ? 104 : 118, Math.floor(100 * (maxW - 15) / widest)), g = 1;
+  const gridTop = () => Math.max(drawRecapHead(T, fs, g, false, maxW), statsBottom) + 30;
+  while (CONTENT_BOTTOM - 24 - gridTop() < 430 && fs > 56) fs -= 4;
+  while (CONTENT_BOTTOM - 24 - gridTop() < 430 && g > .3) g -= .1;
+  drawRecapHead(T, fs, g, true, maxW);
+  drawStats(T, true);
+
+  const gx = 64, gw = 952, gy = gridTop(), gh = CONTENT_BOTTOM - 24 - gy, gap = 12;
+  const ph = images.photos.slice(0, 6), cells = GRIDS[Math.max(1, ph.length)];
+  cells.forEach(([fx, fy, fw, fh], i) => {
+    const x = gx + fx * gw + (fx > 0 ? gap / 2 : 0), y = gy + fy * gh + (fy > 0 ? gap / 2 : 0);
+    const w = fw * gw - (fx > 0 ? gap / 2 : 0) - (fx + fw < .999 ? gap / 2 : 0), h = fh * gh - (fy > 0 ? gap / 2 : 0) - (fy + fh < .999 ? gap / 2 : 0);
+    ctx.save(); ctx.shadowColor = 'rgba(10,40,80,.22)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
+    ctx.fillStyle = '#fff'; rr(x, y, w, h, 18); ctx.fill(); ctx.restore();
+    ctx.save(); rr(x, y, w, h, 18); ctx.clip();
+    if (ph[i]) cover(ph[i].img, x, y, w, h, .5, .4); else placeholder(x, y, w, h, 'Add your action photos');
+    ctx.restore();
+  });
+  const [f0x, f0y, , f0h] = cells[0];
+  drawTag(T, gx + 18, gy + f0y * gh + f0h * gh - (cells.length > 1 && f0y + f0h < .999 ? gap / 2 : 0) - 62);
+  drawBandAndFooter(T);
+}
+
 function render() {
   const T = THEMES[state.theme] || THEMES.sky, recOn = !!state.recOn;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingQuality = 'high'; ctx.clearRect(0, 0, W, H); ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  if (state.mode === 'recap') { renderRecap(T); if (!captionEdited) $('#cap').value = caption(); return; }
 
   // background, dots and the colour column
   if (T.bg2) { const g = ctx.createLinearGradient(0, 0, 0, CONTENT_BOTTOM); g.addColorStop(0, T.bg); g.addColorStop(1, T.bg2); ctx.fillStyle = g; }
@@ -271,7 +421,23 @@ function render() {
 }
 
 /* ---------- caption ---------- */
+function recapCaption() {
+  const title = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).join(' ');
+  const chip = (state.chip || '').trim(), partners = (state.partners || '').trim();
+  const d = fmtDate(state.date), place = [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ');
+  const lines = [(chip ? `${chip}: ${title}` : title) + ' ✅', ''];
+  lines.push(`JCI Cebu${partners ? ', together with ' + partners + ',' : ''} held ${title || 'this project'}${place ? ' at ' + place : ''}${d ? ' on ' + d : ''}.`);
+  const st = statsList();
+  if (st.length) { lines.push(''); st.forEach(([n, l]) => lines.push('• ' + [n, l].filter(Boolean).join(' '))); }
+  const close = [state.band, state.bandHi].map(s => (s || '').trim()).filter(Boolean).join(' ');
+  if (close) lines.push('', close);
+  lines.push('', 'SALAMAT. Gratitude in Motion. 💙');
+  const tags = ['#JCICebu', state.hashtag ? '#' + state.hashtag.replace(/^#/, '').replace(/\s+/g, '') : '', '#SALAMAT79', '#GratitudeInMotion', '#ChampionGenuineImpact'];
+  lines.push('', [...new Set(tags.filter(Boolean))].join(' '));
+  return lines.join('\n');
+}
 function caption() {
+  if (state.mode === 'recap') return recapCaption();
   const title = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).join(' ');
   const chip = (state.chip || '').trim();
   const lines = [];
@@ -304,11 +470,49 @@ function fillForm() {
 let raf = 0;
 const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
 form.addEventListener('input', e => {
-  const el = e.target; if (!el.name || !(el.name in state)) return;
+  const el = e.target; if (!el.name || el.name === 'mode' || !(el.name in state)) return;
   state[el.name] = el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value;
   schedule();
 });
 $('#cap').addEventListener('input', () => { captionEdited = true; });
+
+/* ---------- announcement vs project done ---------- */
+function applyMode() {
+  document.querySelectorAll('[data-only]').forEach(el => { el.hidden = el.dataset.only !== state.mode; });
+  document.querySelectorAll('input[name=mode]').forEach(r => { r.checked = r.value === state.mode; });
+}
+function setMode(m) {
+  if (m === state.mode) return;
+  const from = MODE_DEFAULTS[state.mode], to = MODE_DEFAULTS[m];
+  for (const k of Object.keys(to)) if (!(state[k] || '').trim() || state[k] === from[k]) state[k] = to[k];
+  // an invitation closing line ("See you in Tabunok!") never fits a recap
+  if (m === 'recap' && /^see you/i.test(state.band || '')) { state.band = to.band; state.bandHi = to.bandHi; }
+  state.mode = m;
+  if (m === 'recap' && !images.photos.length) images.photos = [images.hero, images.rec].filter(Boolean).map(img => ({ src: img.src, img }));
+  captionEdited = false; fillForm(); applyMode(); drawPhotoList(); schedule();
+}
+document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => setMode(r.value)));
+
+$('#photosIn').addEventListener('change', async e => {
+  for (const f of [...e.target.files]) {
+    if (images.photos.length >= 6) { toast('Up to 6 photos'); break; }
+    const im = await fileImg(f); images.photos.push({ src: im.src, img: shrink(im) });
+  }
+  e.target.value = ''; drawPhotoList(); schedule();
+});
+function drawPhotoList() {
+  const box = $('#photoList'); box.replaceChildren();
+  images.photos.forEach((p, i) => {
+    const fig = document.createElement('figure'), img = document.createElement('img'), tools = document.createElement('div');
+    img.src = p.src; img.alt = `Photo ${i + 1}`;
+    if (i === 0) { const tag = document.createElement('span'); tag.className = 'big'; tag.textContent = 'Big photo'; tools.append(tag); }
+    else { const up = document.createElement('button'); up.type = 'button'; up.textContent = 'Make big'; up.onclick = () => { images.photos.unshift(...images.photos.splice(i, 1)); drawPhotoList(); schedule(); }; tools.append(up); }
+    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'Remove';
+    rm.onclick = () => { images.photos.splice(i, 1); drawPhotoList(); schedule(); };
+    tools.append(rm); fig.append(img, tools); box.append(fig);
+  });
+  $('#photoCount').textContent = images.photos.length ? `${images.photos.length} of 6` : 'none yet';
+}
 
 const themesBox = $('#themes');
 for (const [key, t] of Object.entries(THEMES)) {
@@ -334,19 +538,26 @@ function drawLogoList() {
 }
 
 async function loadExample() {
+  if (state.mode === 'recap') {
+    state = { ...RECAP_EXAMPLE }; captionEdited = false;
+    const ims = await Promise.all(['samples/medical.jpg', 'samples/hydrate-cebu.jpg', 'samples/san-remigio.jpg', 'samples/kaagapay.jpg'].map(loadImg));
+    images.photos = ims.map(im => ({ src: im.src, img: im })); images.logos = [];
+    fillForm(); applyMode(); drawLogoList(); drawPhotoList(); render(); return;
+  }
   state = { ...EXAMPLE }; captionEdited = false;
   const [h, r, l1, l2] = await Promise.all(['samples/medical.jpg', 'samples/san-remigio.jpg', 'samples/my-mountain-mover.png', 'samples/greater-heights.png'].map(loadImg));
   images.hero = h; images.rec = r; images.logos = [l1, l2].map(im => ({ src: im.src, draw: prepLogo(im) }));
-  fillForm(); drawLogoList(); render();
+  fillForm(); applyMode(); drawLogoList(); render();
 }
 $('#example').onclick = loadExample;
 $('#blank').onclick = () => {
-  state = { ...BLANK }; images.hero = null; images.rec = null; images.logos = []; captionEdited = false;
-  fillForm(); drawLogoList(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  const m = state.mode;
+  state = { ...BLANK, ...MODE_DEFAULTS[m], mode: m }; images.hero = null; images.rec = null; images.logos = []; images.photos = []; captionEdited = false;
+  fillForm(); applyMode(); drawLogoList(); drawPhotoList(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 /* ---------- export ---------- */
-const fileName = () => 'pubmat-' + ([state.h1, state.h2].join(' ').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'jci-cebu') + '.jpg';
+const fileName = () => (state.mode === 'recap' ? 'recap-' : 'pubmat-') + ([state.h1, state.h2].join(' ').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'jci-cebu') + '.jpg';
 const blob = () => new Promise(res => cv.toBlob(res, 'image/jpeg', .93));
 $('#dl').onclick = async () => {
   render(); const b = await blob(), a = document.createElement('a');
@@ -372,6 +583,8 @@ let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classLis
   try { await Promise.all([500, 700, 800, 400].map(w => document.fonts.load(`${w} 40px "Plus Jakarta Sans"`))); } catch {}
   [assets.stripNavy, assets.stripWhite, assets.footer] = await Promise.all(
     ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png'].map(s => loadImg(s).catch(() => null)));
-  fillForm();
+  // ?type=done opens straight on the "Project done" recap
+  if (/[?&]type=(done|recap)/.test(location.search)) state.mode = 'recap';
+  fillForm(); applyMode();
   await loadExample();
 })();
