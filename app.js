@@ -25,14 +25,14 @@ const EXAMPLE = {
   chip: 'Impact Immersion', kicker: 'JCI Cebu community project', h1: 'Medical', h2: 'Mission', theme: 'sky',
   date: '2026-11-22', t1: '07:30', t2: '12:30', venue: 'Tabunok Central Elementary School', area: 'Tabunok, Talisay City', meet: '', outfit: 'White Community Shirt',
   partners: 'My Mountain Mover and its Greater Heights Foundation', pLabel: 'In partnership with',
-  hz: 100, hx: 50, hy: 35, tag: 'Care in action',
+  hz: 100, hx: 50, hy: 35, tag: 'Gratitude in motion',
   recOn: true, ry: 30, rLabel: 'On the record', rTitle: 'From San Remigio\nto Tabunok.', rBody: 'Our Impact Immersion went north in May 2025. This Sunday, it comes to Talisay City.',
   band: 'See you in', bandHi: 'Tabunok!', hashtag: 'ImpactImmersion',
 };
 const BLANK = {
   chip: 'Community project', kicker: 'JCI Cebu', h1: 'Project', h2: 'Title', theme: 'sky',
   date: '', t1: '', t2: '', venue: '', area: '', meet: '', outfit: '', partners: '', pLabel: 'In partnership with',
-  hz: 100, hx: 50, hy: 40, tag: '', recOn: false, ry: 40, rLabel: 'On the record', rTitle: '', rBody: '',
+  hz: 100, hx: 50, hy: 40, tag: 'Gratitude in motion', recOn: false, ry: 40, rLabel: 'On the record', rTitle: '', rBody: '',
   band: 'See you', bandHi: 'there!', hashtag: 'JCICebu',
 };
 
