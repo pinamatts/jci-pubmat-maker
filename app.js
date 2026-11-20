@@ -286,7 +286,8 @@ function caption() {
   if ((state.outfit || '').trim()) lines.push('👕 Outfit: ' + state.outfit.trim());
   const close = [state.band, state.bandHi].map(s => (s || '').trim()).filter(Boolean).join(' ');
   if (close) lines.push('', close);
-  const tags = ['#JCICebu', state.hashtag ? '#' + state.hashtag.replace(/^#/, '').replace(/\s+/g, '') : '', '#SALAMAT79', '#ChampionGenuineImpact'];
+  lines.push('', 'SALAMAT. Gratitude in Motion. 💙');
+  const tags = ['#JCICebu', state.hashtag ? '#' + state.hashtag.replace(/^#/, '').replace(/\s+/g, '') : '', '#SALAMAT79', '#GratitudeInMotion', '#ChampionGenuineImpact'];
   lines.push('', [...new Set(tags.filter(Boolean))].join(' '));
   return lines.join('\n');
 }
