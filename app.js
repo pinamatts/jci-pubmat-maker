@@ -39,16 +39,24 @@ const BLANK = {
   band: 'See you', bandHi: 'there!', hashtag: 'JCICebu',
 };
 
+// Post-op example: the San Remigio Impact Immersion group photo (May 2025). No numbers: only real counts go on.
 const RECAP_EXAMPLE = {
-  ...BLANK, mode: 'recap', chip: 'Impact Immersion', kicker: 'Mission accomplished', h1: 'Project', h2: 'Title', theme: 'sky',
-  date: '', venue: 'Venue', area: 'City', pLabel: 'Thank you to our partners', tag: 'Gratitude in motion',
-  band: 'SALAMAT to everyone', bandHi: 'who joined!', hashtag: 'ImpactImmersion',
-  s1n: '000', s1l: 'residents served', s2n: '00', s2l: 'volunteers', s3n: '0', s3l: 'partners',
+  ...BLANK, mode: 'recap', chip: 'Impact Immersion', kicker: 'Successfully implemented', h1: 'Impact', h2: 'Immersion', theme: 'sky',
+  date: '', venue: 'San Remigio', area: 'Cebu', partners: '', pLabel: 'Thank you to our partners', tag: 'Gratitude in motion',
+  hz: 100, hx: 50, hy: 45, band: 'SALAMAT to everyone', bandHi: 'who made it happen!', hashtag: 'ImpactImmersion',
 };
 const MODE_DEFAULTS = {
   announce: { kicker: 'JCI Cebu community project', band: 'See you', bandHi: 'there!', pLabel: 'In partnership with' },
-  recap: { kicker: 'Mission accomplished', band: 'SALAMAT to everyone', bandHi: 'who joined!', pLabel: 'Thank you to our partners' },
+  recap: { kicker: 'Successfully implemented', band: 'SALAMAT to everyone', bandHi: 'who made it happen!', pLabel: 'Thank you to our partners' },
 };
+// Confirmed 2027 partners (same roster as the footer), so nobody has to hunt for a logo file.
+const PARTNER_LOGOS = [
+  ['aznar.png', 'Aznar Shipping'], ['levelup.jpg', 'Level Up Talent Solutions'], ['travelbee.png', 'Travelbee'], ['bighotel.png', 'BIG Hotel'],
+  ['pillows.jpg', 'Pillows Hotel'], ['mangtinapay.jpg', 'Mang Tinapay'], ['darmas.png', "Darma's Giftdash"], ['cebuexpress.png', 'Cebu Air Mail Express'],
+  ['morningmart.jpg', 'Morning Mart Philippines'], ['java.jpg', 'Java Photography & Film'], ['vans.jpg', 'Vanstravel Tourism'], ['openmic.jpg', 'Open Mic Acoustic Lounge'],
+  ['vensu.jpg', 'Vensu PH'], ['jcijapan.png', 'JCI Japan'], ['ganaeat.png', 'Gana Eat'], ['sdh.png', 'Static Data Hosting'],
+  ['sante.jpg', 'Santé Barley'], ['ara.jpg', 'ARA Digital Printing Services'], ['legalize.png', 'LegalizePH'], ['neri.jpg', 'Neri Audio'],
+];
 let state = { ...EXAMPLE };
 const images = { hero: null, rec: null, logos: [], photos: [] }; // logos: [{src, draw}], photos: [{src, img}]
 const assets = {};
@@ -241,99 +249,271 @@ function drawBase(T, dotsW) {
 }
 const drawStrip = T => { const strip = T.strip === 'white' ? assets.stripWhite : assets.stripNavy; if (strip) ctx.drawImage(strip, 64, 56, strip.width * 48 / strip.height, 48); };
 
-/* ----- "Project done" recap: title, numbers, and a grid of up to 6 action photos ----- */
-const GRIDS = {
-  1: [[0, 0, 1, 1]],
-  2: [[0, 0, .5, 1], [.5, 0, .5, 1]],
-  3: [[0, 0, .6, 1], [.6, 0, .4, .5], [.6, .5, .4, .5]],
-  4: [[0, 0, .5, .5], [.5, 0, .5, .5], [0, .5, .5, .5], [.5, .5, .5, .5]],
-  5: [[0, 0, .5, 1], [.5, 0, .25, .5], [.75, 0, .25, .5], [.5, .5, .25, .5], [.75, .5, .25, .5]],
-  6: [[0, 0, 1 / 3, .5], [1 / 3, 0, 1 / 3, .5], [2 / 3, 0, 1 / 3, .5], [0, .5, 1 / 3, .5], [1 / 3, .5, 1 / 3, .5], [2 / 3, .5, 1 / 3, .5]],
-};
+/* ----- "Project done": the post-operation post. One big group photo, "successfully implemented",
+   title, date and venue, thank-you logos and optional real numbers. (VP feedback, 21 Nov 2026: the
+   post-op is still an announcement that the project happened, built around one photo of everyone.) ----- */
 const statsList = () => [[state.s1n, state.s1l], [state.s2n, state.s2l], [state.s3n, state.s3l]].map(([n, l]) => [(n || '').trim(), (l || '').trim()]).filter(([n, l]) => n || l);
+const RIGHT_X = 664, RIGHT_W = 352;
 
-function drawRecapHead(T, fs, g, draw, maxW) {
-  const x = 64; let y = 160;
-  const chip = (state.chip || '').toUpperCase().trim();
-  if (chip) {
-    F(800, 17); const w = tw(chip, 3) + 36 + 19;
-    if (draw) {
-      ctx.fillStyle = T.chipBg; rr(x, y, w, 42, 21); ctx.fill();
-      ctx.fillStyle = T.chipDot; ctx.beginPath(); ctx.arc(x + 22.5, y + 21, 4.5, 0, 7); ctx.fill();
-      ctx.fillStyle = T.chipInk; txt(chip, x + 37, y + 27.5, 3);
-    }
-    y += 42 + 22 * g;
+function drawChip(T, x, y, chip, draw) {
+  F(800, 17); const w = tw(chip, 3) + 36 + 19;
+  if (draw) {
+    ctx.fillStyle = T.chipBg; rr(x, y, w, 42, 21); ctx.fill();
+    ctx.fillStyle = T.chipDot; ctx.beginPath(); ctx.arc(x + 22.5, y + 21, 4.5, 0, 7); ctx.fill();
+    ctx.fillStyle = T.chipInk; txt(chip, x + 37, y + 27.5, 3);
   }
-  const k = (state.kicker || '').toUpperCase().trim();
-  if (k) { F(700, 18); if (draw) { ctx.fillStyle = T.accent; txt('✓ ' + k, x, y + 15, 2.9); } y += 18 + 12 * g; }
-  F(800, fs);
-  [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).forEach((l, i) => { if (draw) { ctx.fillStyle = i === 1 ? T.accent : T.ink; txt(l, x, y + fs * .8, -.035 * fs); } y += fs * .94; });
-  const meta = [fmtDate(state.date), [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ')].filter(Boolean).join('  ·  ');
-  if (meta) { y += 14 * g; F(600, 22); wrap(meta, maxW).slice(0, 2).forEach(l => { if (draw) { ctx.fillStyle = T.muted; txt(l, x, y + 21); } y += 30; }); }
-  y = drawPartners(T, x, y, g * .8, draw, Math.min(maxW, 540));
+  return w;
+}
+
+// Thank-you logos (or partner names) and the optional numbers, in the right-hand column.
+function drawRecapRight(T, top, draw) {
+  const x = RIGHT_X, w = RIGHT_W; let y = top;
+  const lab = (state.pLabel || '').toUpperCase().trim();
+  if (images.logos.length) {
+    if (lab) { F(800, 13); if (draw) { ctx.fillStyle = T.label; txt(lab, x, y + 11, 2.6); } y += 13 + 14; }
+    let items = images.logos.map(l => { const im = l.draw, a = im.width / im.height, h = Math.min(88, 230 / a); return { im, w: h * a, h }; });
+    const gap = 30, pad = T.dark ? 14 : 0, maxW = w - pad * 2;
+    const total = items.reduce((s, it) => s + it.w, 0) + gap * (items.length - 1);
+    if (total > maxW) { const k = maxW / total; items = items.map(it => ({ ...it, w: it.w * k, h: it.h * k })); }
+    const rowH = Math.max(...items.map(it => it.h)), rowW = Math.min(total, maxW);
+    if (draw) {
+      if (T.dark) { ctx.fillStyle = '#fff'; rr(x, y, rowW + pad * 2, rowH + pad * 2, 14); ctx.fill(); }
+      let cx = x + pad;
+      items.forEach((it, i) => {
+        if (i) { ctx.fillStyle = T.divider; ctx.fillRect(cx + gap / 2 - 1, y + pad + rowH * .1, 2, rowH * .8); cx += gap; }
+        ctx.drawImage(it.im, cx, y + pad + (rowH - it.h) / 2, it.w, it.h); cx += it.w;
+      });
+    }
+    y += rowH + pad * 2;
+  } else if ((state.partners || '').trim()) {
+    if (lab) { F(800, 13); if (draw) { ctx.fillStyle = T.label; txt(lab, x, y + 11, 2.6); } y += 13 + 12; }
+    F(700, 22); wrap(state.partners.trim(), w).slice(0, 3).forEach(l => { if (draw) { ctx.fillStyle = T.accent; txt(l, x, y + 21); } y += 30; });
+  }
+  const st = statsList();
+  if (st.length) {
+    if (y > top) y += 22;
+    const cw = w / st.length;
+    let rowH = 0;
+    st.forEach(([n, l], i) => {
+      const cx = x + i * cw; let yy = y;
+      if (n) { let ns = 44; F(800, ns); while (tw(n, -1) > cw - 14 && ns > 24) { ns -= 2; F(800, ns); } if (draw) { ctx.fillStyle = T.accent; txt(n, cx, yy + ns * .8, -1); } yy += ns * .95; }
+      F(600, 15); wrap(l, cw - 14).slice(0, 2).forEach(t => { if (draw) { ctx.fillStyle = T.muted; txt(t, cx, yy + 15); } yy += 20; });
+      rowH = Math.max(rowH, yy - y);
+    });
+    y += rowH;
+  }
   return y;
 }
 
-function drawStats(T, draw) {
-  const st = statsList(); if (!st.length) return 0;
-  const px = 700, pw = 316, py = 156, inner = pw - 56;
-  F(600, 18); const blocks = st.map(([n, l]) => ({ n, lines: l ? wrap(l, inner).slice(0, 2) : [] }));
-  const hgt = 30 + blocks.reduce((s, b) => s + (b.n ? 64 : 0) + b.lines.length * 24, 0) + (blocks.length - 1) * 30 + 30;
-  if (draw) {
-    ctx.save(); ctx.shadowColor = 'rgba(10,40,80,.25)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 18;
-    const cg = ctx.createLinearGradient(px, py, px + pw, py + hgt); T.col.forEach((c, i) => cg.addColorStop(i / (T.col.length - 1), c));
-    ctx.fillStyle = cg; rr(px, py, pw, hgt, 26); ctx.fill(); ctx.restore();
-    ctx.save(); rr(px, py, pw, hgt, 26); ctx.clip(); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 3;
-    for (const r of [70, 130, 190]) { ctx.beginPath(); ctx.arc(px + pw + 20, py + hgt + 20, r, 0, 7); ctx.stroke(); } ctx.restore();
-    let y = py + 30;
-    blocks.forEach((b, i) => {
-      if (i) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(px + 28, y + 14, inner, 2); y += 30; }
-      if (b.n) { let ns = 60; F(800, ns); while (tw(b.n, -1.5) > inner && ns > 30) { ns -= 4; F(800, ns); } ctx.fillStyle = '#fff'; txt(b.n, px + 28, y + 52, -1.5); y += 64; }
-      F(600, 18); ctx.fillStyle = 'rgba(255,255,255,.94)'; b.lines.forEach(l => { txt(l, px + 28, y + 17); y += 24; });
-    });
+function drawRecapText(T, top, fs, g, draw) {
+  const x = 64, hasRight = images.logos.length || (state.partners || '').trim() || statsList().length;
+  const maxW = hasRight ? RIGHT_X - x - 40 : 952;
+  let y = top;
+  const chip = (state.chip || '').toUpperCase().trim(), k = (state.kicker || '').toUpperCase().trim();
+  if (chip || k) {
+    let kx = x;
+    if (chip) kx += drawChip(T, x, y, chip, draw) + 16;
+    if (k) {
+      F(800, 17); const kt = '✓  ' + k, kw = tw(kt, 2.4) + 32;
+      if (chip && kx + kw > x + maxW) { y += 42 + 12; kx = x; }
+      if (draw) { ctx.fillStyle = T.accent; rr(kx, y, kw, 42, 21); ctx.fill(); ctx.fillStyle = '#fff'; txt(kt, kx + 16, y + 27.5, 2.4); }
+    }
+    y += 42 + 18 * g;
   }
-  return py + hgt;
+  const L = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean);
+  F(800, fs);
+  if (L.length === 2 && tw(L[0] + ' ' + L[1], -.035 * fs) <= maxW) {
+    if (draw) { ctx.fillStyle = T.ink; txt(L[0] + ' ', x, y + fs * .8, -.035 * fs); ctx.fillStyle = T.accent; txt(L[1], x + tw(L[0] + ' ', -.035 * fs), y + fs * .8, -.035 * fs); }
+    y += fs * .96;
+  } else L.forEach((l, i) => { if (draw) { ctx.fillStyle = i === 1 ? T.accent : T.ink; txt(l, x, y + fs * .8, -.035 * fs); } y += fs * .94; });
+  const d = fmtDate(state.date), place = [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ');
+  if (d || place) {
+    y += 14 * g; const y0 = y, bx = x + 26;
+    if (d) { F(800, 24); if (draw) { ctx.fillStyle = T.ink; txt(d, bx, y + 23); } y += 32; }
+    if (place) { F(600, 21); wrap(place, maxW - 26).slice(0, 2).forEach(l => { if (draw) { ctx.fillStyle = T.muted; txt(l, bx, y + 20); } y += 28; }); }
+    if (draw) { ctx.fillStyle = T.rule; ctx.fillRect(x, y0 + 2, 6, y - y0 - 4); }
+  }
+  return y;
 }
 
 function renderRecap(T) {
   drawBase(T, W);
-  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, CONTENT_BOTTOM); ctx.clip();
-  ctx.strokeStyle = T.dark ? 'rgba(255,255,255,.08)' : 'rgba(0,151,215,.10)'; ctx.lineWidth = 3;
-  for (const r of [140, 230, 320, 410]) { ctx.beginPath(); ctx.arc(W + 40, -40, r, 0, 7); ctx.stroke(); }
-  ctx.restore();
   drawStrip(T);
+  const PT = 124, GAP_TXT = 34, BOTTOM = CONTENT_BOTTOM - 30, px = 40, pw = W - 80;
+  // a group photo must show everyone, so the frame follows the photo's own shape instead of cropping the ends off
+  const im = images.hero, ratio = im ? (im.naturalWidth || im.width) / (im.naturalHeight || im.height) : 1.5;
+  const want = Math.round(pw / Math.min(Math.max(ratio, 1), 2.4));
+  let fs = 110, g = 1.4;
+  const blockH = () => Math.max(drawRecapText(T, 0, fs, g, false), drawRecapRight(T, 0, false));
+  const room = () => BOTTOM - PT - GAP_TXT - blockH();
+  while (room() < Math.min(want, 560) && fs > 50) fs -= 4;
+  while (room() < Math.min(want, 560) && g > .3) g -= .1;
+  const phH = Math.max(380, Math.min(want, room()));
+  // whatever room the photo doesn't need goes above and below the text
+  const spare = room() - phH, top = PT + phH + GAP_TXT + Math.round(spare * .35);
 
-  const hasStats = statsList().length > 0, maxW = hasStats ? 600 : 952;
-  const statsBottom = drawStats(T, false);
-  F(800, 100);
-  const widest = Math.max(1, ...[state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).map(l => tw(l, -3.5)));
-  let fs = Math.min(hasStats ? 104 : 118, Math.floor(100 * (maxW - 15) / widest)), g = 1;
-  const gridTop = () => Math.max(drawRecapHead(T, fs, g, false, maxW), statsBottom) + 30;
-  while (CONTENT_BOTTOM - 24 - gridTop() < 430 && fs > 56) fs -= 4;
-  while (CONTENT_BOTTOM - 24 - gridTop() < 430 && g > .3) g -= .1;
-  drawRecapHead(T, fs, g, true, maxW);
-  drawStats(T, true);
+  ctx.save(); ctx.shadowColor = 'rgba(10,40,80,.28)'; ctx.shadowBlur = 44; ctx.shadowOffsetY = 18;
+  ctx.fillStyle = '#fff'; rr(px, PT, pw, phH, 26); ctx.fill(); ctx.restore();
+  ctx.save(); rr(px, PT, pw, phH, 26); ctx.clip();
+  if (im) cover(im, px, PT, pw, phH, state.hx / 100, state.hy / 100, state.hz / 100);
+  else placeholder(px, PT, pw, phH, 'Add the group photo');
+  ctx.restore();
+  drawTag(T, px + 24, PT + phH - 64);
 
-  const gx = 64, gw = 952, gy = gridTop(), gh = CONTENT_BOTTOM - 24 - gy, gap = 12;
-  const ph = images.photos.slice(0, 6), cells = GRIDS[Math.max(1, ph.length)];
-  cells.forEach(([fx, fy, fw, fh], i) => {
-    const x = gx + fx * gw + (fx > 0 ? gap / 2 : 0), y = gy + fy * gh + (fy > 0 ? gap / 2 : 0);
-    const w = fw * gw - (fx > 0 ? gap / 2 : 0) - (fx + fw < .999 ? gap / 2 : 0), h = fh * gh - (fy > 0 ? gap / 2 : 0) - (fy + fh < .999 ? gap / 2 : 0);
-    ctx.save(); ctx.shadowColor = 'rgba(10,40,80,.22)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
-    ctx.fillStyle = '#fff'; rr(x, y, w, h, 18); ctx.fill(); ctx.restore();
-    ctx.save(); rr(x, y, w, h, 18); ctx.clip();
-    if (ph[i]) cover(ph[i].img, x, y, w, h, .5, .4); else placeholder(x, y, w, h, 'Add your action photos');
-    ctx.restore();
-  });
-  const [f0x, f0y, , f0h] = cells[0];
-  drawTag(T, gx + 18, gy + f0y * gh + f0h * gh - (cells.length > 1 && f0y + f0h < .999 ? gap / 2 : 0) - 62);
+  drawRecapText(T, top, fs, g, true);
+  drawRecapRight(T, top + 4, true);
   drawBandAndFooter(T);
 }
+
+/* ----- BOD meeting attendance: tick who is coming, the pubmat sorts them into two groups ----- */
+const BOARD_2027 = [
+  ['matt-malagar', 'Matt Erikson Malagar', 'Pres. Matt Malagar', 'LO President'],
+  ['daryl-jabil', 'Daryl Niño Jabil', 'IPP Daryl Jabil', 'Immediate Past President'],
+  ['amiesteven-lao', 'Atty. Amiesteven Lao', 'Atty. Steve Lao', 'Executive Vice President, Internal'],
+  ['johnel-luceno', 'Johnel Luceño', 'Nel Luceño', 'Executive Vice President, External'],
+  ['ren-oliva', 'Ren Oliva', 'Ren Oliva', 'Executive Secretary'],
+  ['pedro-fernan', 'Pedro Fernan III', 'Pidot Fernan', 'Executive Treasurer'],
+  ['mark-veloso', 'Atty. Mark Jason Veloso', 'Atty. Mark Veloso', 'General Legal Counsel'],
+  ['adrian-tan', 'Adrian Tan', 'Adrian Tan', 'Auditor'],
+  ['gian-batiller', 'Gian Martin Batiller', 'Gian Batiller', 'VP, Organizational Development'],
+  ['joshua-toledo', 'Joshua Toledo', 'Joshua Toledo', 'VP, Training'],
+  ['martin-manalili', 'Martin Manalili', 'Martin Manalili', 'VP, Business Development'],
+  ['jynx-chanjueco', 'Jynx King Chanjueco', 'Jynx Chanjueco', 'VP, Community Development'],
+  ['jay-alegarbes', 'Jay Emanuel Alegarbes', 'Jay Alegarbes', 'VP, Linkages'],
+  ['nino-miole', 'Niño Jan Miole', 'Niño Miole', 'VP, Communications'],
+  ['juv-rivera', 'John Juv Rivera', 'Juv Rivera', 'Director for Recruitment & Engagements'],
+  ['kim-mozo', 'Kim Ralph Mozo', 'Kim Mozo', 'Local Skills Development Director'],
+  ['sukho-cho', 'Sukho Cho', 'Sukho Cho', 'Director for Business & Partnerships'],
+  ['charles-ausejo', 'Charles Ausejo Jr.', 'Charles Ausejo', 'Director for Special Projects'],
+  ['andreu-padernal', 'Andreu Padernal', 'Andreu Padernal', 'Director for International Relations'],
+  ['glenn-java', 'Glenn Java', 'Glenn Java', 'Director for National Relations'],
+].map(([id, name, short, role]) => ({ id, name, short, role, photo: `assets/bod/${id}.jpg`, on: false }));
+const SOFT_PHOTOS = new Set(['martin-manalili', 'juv-rivera', 'sukho-cho', 'jynx-chanjueco', 'charles-ausejo']);
+const BODM_DEFAULTS = {
+  mode: 'bodm', mNo: '1st', mYear: '2027 JCI Cebu', mTitle: "Board of Directors' Meeting", theme: 'sky',
+  date: '', t1: '18:30', t2: '', venue: 'JCI Annex Bldg.', area: 'Pelaez St., Kamagayan, Cebu City', showNames: true,
+  band: 'Kindly confirm your', bandHi: 'attendance!', hashtag: 'JCICebu', tag: '',
+};
+const LS_ROSTER = 'jcpm-bodm-roster-v1', LS_MEET = 'jcpm-bodm-meeting-v1';
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+};
+let roster = (store.get(LS_ROSTER) || BOARD_2027).map(m => ({ ...m }));
+const faces = {}; // id -> loaded image
+async function loadFace(m) {
+  if (!m.photo) { faces[m.id] = null; return; }
+  if (faces[m.id] && faces[m.id].src === new URL(m.photo, location.href).href) return;
+  try { faces[m.id] = await loadImg(m.photo); } catch { faces[m.id] = null; }
+}
+const saveRoster = () => { if (!store.set(LS_ROSTER, roster)) toast('Could not save on this phone'); };
+const saveMeeting = () => { const o = {}; for (const k of Object.keys(BODM_DEFAULTS)) o[k] = state[k]; store.set(LS_MEET, o); };
+const loadMeeting = () => ({ ...STATS0, ...BLANK, ...BODM_DEFAULTS, ...(store.get(LS_MEET) || {}), mode: 'bodm' });
+
+// Try every column count and keep the one that gives the biggest faces.
+function bodmLayout(n1, n2, avail, showNames) {
+  let best = { cols: 10, colW: 95.2, D: 56, nameH: 0, rowH: 70 };
+  for (const cols of [5, 6, 7, 8, 9, 10]) {
+    const colW = 952 / cols;
+    for (let D = Math.min(150, colW - 16); D >= 56; D -= 2) {
+      const nameH = showNames ? Math.max(14, Math.round(D * .15)) * 2 + 14 : 0;
+      const rowH = D + nameH + 14, rows = Math.ceil(n1 / cols) + Math.ceil(n2 / cols);
+      const heads = 60 + (n2 ? 60 + 18 : 0) + (n1 ? 0 : 40);
+      if (heads + rows * rowH <= avail) { if (D > best.D) best = { cols, colW, D, nameH, rowH }; break; }
+    }
+  }
+  return best;
+}
+
+function drawFace(m, cx, cy, D, ring, T) {
+  ctx.save(); ctx.shadowColor = 'rgba(10,40,80,.18)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 6;
+  ctx.fillStyle = ring; ctx.beginPath(); ctx.arc(cx, cy, D / 2, 0, 7); ctx.fill(); ctx.restore();
+  const r = D / 2 - Math.max(3, D * .045);
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.clip();
+  const im = faces[m.id];
+  if (im) cover(im, cx - r, cy - r, r * 2, r * 2, .5, .25);
+  else {
+    ctx.fillStyle = '#dfe8f1'; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    const ini = m.name.replace(/^(Atty\.|Pres\.|Hon\.)\s*/i, '').split(/\s+/).filter(Boolean).map(s => s[0]).slice(0, 2).join('').toUpperCase();
+    F(800, r * .8); ctx.fillStyle = '#6b7891'; ctx.textAlign = 'center'; ctx.fillText(ini, cx, cy + r * .28); ctx.textAlign = 'left';
+  }
+  ctx.restore();
+}
+
+function drawGroupHead(T, x, y, kind, label, count) {
+  const cx = x + 22, cy = y + 22;
+  if (kind === 'yes') {
+    ctx.fillStyle = T.accent; ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 4.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(cx - 9, cy + 1); ctx.lineTo(cx - 2.5, cy + 8); ctx.lineTo(cx + 10, cy - 7); ctx.stroke();
+  } else {
+    ctx.strokeStyle = T.ink; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(cx, cy, 18.5, 0, 7); ctx.stroke();
+    F(800, 24); ctx.fillStyle = T.ink; ctx.textAlign = 'center'; ctx.fillText('?', cx, cy + 9); ctx.textAlign = 'left';
+  }
+  F(800, 32); ctx.fillStyle = T.ink; txt(label, x + 58, y + 34, -.4);
+  const lw = tw(label, -.4); F(800, 18); const ct = String(count), pw = Math.max(40, tw(ct) + 24);
+  ctx.fillStyle = kind === 'yes' ? T.accent : (T.dark ? 'rgba(255,255,255,.16)' : '#e3e9f2');
+  rr(x + 58 + lw + 14, y + 9, pw, 30, 15); ctx.fill();
+  ctx.fillStyle = kind === 'yes' ? '#fff' : T.ink; ctx.textAlign = 'center'; ctx.fillText(ct, x + 58 + lw + 14 + pw / 2, y + 30); ctx.textAlign = 'left';
+}
+
+function renderBodm(T) {
+  drawBase(T, W);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, CONTENT_BOTTOM); ctx.clip();
+  ctx.strokeStyle = T.dark ? 'rgba(255,255,255,.08)' : 'rgba(0,151,215,.10)'; ctx.lineWidth = 3;
+  for (const r of [140, 230, 320]) { ctx.beginPath(); ctx.arc(W + 40, -40, r, 0, 7); ctx.stroke(); }
+  ctx.restore();
+  drawStrip(T);
+  const x = 64; let y = 142;
+  // title: "1ST 2027 JCI CEBU" over "BOARD OF DIRECTORS' MEETING"
+  const l1 = [state.mNo, state.mYear].map(s => (s || '').trim()).filter(Boolean).join(' ').toUpperCase();
+  const l2 = (state.mTitle || '').trim().toUpperCase();
+  let f1 = 62; F(800, f1); while (tw(l1, -1.5) > 952 && f1 > 30) { f1 -= 2; F(800, f1); }
+  if (l1) { ctx.fillStyle = T.ink; txt(l1, x, y + f1 * .8, -1.5); y += f1 * .98; }
+  let f2 = 50; F(800, f2); while (tw(l2, -1) > 952 && f2 > 26) { f2 -= 2; F(800, f2); }
+  if (l2) { ctx.fillStyle = T.accent; txt(l2, x, y + f2 * .8, -1); y += f2 * .98; }
+  const d = fmtDate(state.date), t = fmtTime(state.t1, state.t2), place = [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ');
+  const when = [d, t].filter(Boolean).join('  ·  ');
+  if (when || place) {
+    y += 14; const y0 = y, bx = x + 26;
+    if (when) { F(800, 25); if (draw1(when, bx, y + 24, T.ink)) y += 34; }
+    if (place) { F(600, 22); wrap(place, 952 - 26).slice(0, 2).forEach(l => { ctx.fillStyle = T.muted; txt(l, bx, y + 21); y += 30; }); }
+    ctx.fillStyle = T.rule; ctx.fillRect(x, y0 + 2, 6, y - y0 - 4);
+  }
+  y += 30;
+
+  const yes = roster.filter(m => m.on), wait = roster.filter(m => !m.on);
+  const avail = CONTENT_BOTTOM - 26 - y, L = bodmLayout(yes.length, wait.length, avail, !!state.showNames);
+  // spread any spare room so the faces don't bunch at the top
+  const used = 60 + (wait.length ? 78 : 0) + (yes.length ? 0 : 40) + (Math.ceil(yes.length / L.cols) + Math.ceil(wait.length / L.cols)) * L.rowH;
+  const spare = Math.max(0, avail - used); y += Math.min(40, spare * .3);
+  const drawGroup = (list, kind, label) => {
+    drawGroupHead(T, x, y, kind, label, list.length); y += 60;
+    if (!list.length) { F(600, 20); ctx.fillStyle = T.muted; txt('No confirmations yet.', x + 58, y + 14); y += 40; return; }
+    list.forEach((m, i) => {
+      const c = i % L.cols, r = Math.floor(i / L.cols), cx = x + c * L.colW + L.colW / 2, top = y + r * L.rowH;
+      drawFace(m, cx, top + L.D / 2, L.D, kind === 'yes' ? T.accent : (T.dark ? 'rgba(255,255,255,.35)' : '#c7d1de'), T);
+      if (L.nameH) {
+        const fsN = Math.max(14, Math.round(L.D * .15)); F(700, fsN); ctx.textAlign = 'center'; ctx.fillStyle = T.ink;
+        wrap(m.short || m.name, L.colW - 6).slice(0, 2).forEach((l, k) => ctx.fillText(l, cx, top + L.D + 8 + fsN + k * (fsN + 3)));
+        ctx.textAlign = 'left';
+      }
+    });
+    y += Math.ceil(list.length / L.cols) * L.rowH;
+  };
+  drawGroup(yes, 'yes', 'Attending');
+  if (wait.length) { y += 18 + Math.min(60, spare * .45); drawGroup(wait, 'wait', 'Waiting for confirmation'); }
+  drawBandAndFooter(T);
+}
+function draw1(t, x, y, col) { ctx.fillStyle = col; txt(t, x, y); return true; }
 
 function render() {
   const T = THEMES[state.theme] || THEMES.sky, recOn = !!state.recOn;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingQuality = 'high'; ctx.clearRect(0, 0, W, H); ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  if (state.mode === 'recap') { renderRecap(T); if (!captionEdited) $('#cap').value = caption(); return; }
+  if (state.mode === 'recap' || state.mode === 'bodm') {
+    state.mode === 'recap' ? renderRecap(T) : renderBodm(T);
+    if (!captionEdited) $('#cap').value = caption(); return;
+  }
 
   // background, dots and the colour column
   if (T.bg2) { const g = ctx.createLinearGradient(0, 0, 0, CONTENT_BOTTOM); g.addColorStop(0, T.bg); g.addColorStop(1, T.bg2); ctx.fillStyle = g; }
@@ -425,19 +605,35 @@ function recapCaption() {
   const title = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).join(' ');
   const chip = (state.chip || '').trim(), partners = (state.partners || '').trim();
   const d = fmtDate(state.date), place = [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ');
-  const lines = [(chip ? `${chip}: ${title}` : title) + ' ✅', ''];
-  lines.push(`JCI Cebu${partners ? ', together with ' + partners + ',' : ''} held ${title || 'this project'}${place ? ' at ' + place : ''}${d ? ' on ' + d : ''}.`);
+  const lines = [`✅ ${chip && chip.toLowerCase() !== title.toLowerCase() ? chip + ': ' : ''}${title || 'Project'}, successfully implemented!`, ''];
+  lines.push(`${d ? 'On ' + d + ', ' : ''}JCI Cebu${partners ? ', together with ' + partners + ',' : ''} successfully implemented ${title || 'this project'}${place ? ' in ' + place : ''}.`);
   const st = statsList();
   if (st.length) { lines.push(''); st.forEach(([n, l]) => lines.push('• ' + [n, l].filter(Boolean).join(' '))); }
   const close = [state.band, state.bandHi].map(s => (s || '').trim()).filter(Boolean).join(' ');
-  if (close) lines.push('', close);
+  if (close) lines.push('', close + (partners ? ` Thank you, ${partners}.` : ''));
+  lines.push('', '📸 More photos in the album.');
   lines.push('', 'SALAMAT. Gratitude in Motion. 💙');
   const tags = ['#JCICebu', state.hashtag ? '#' + state.hashtag.replace(/^#/, '').replace(/\s+/g, '') : '', '#SALAMAT79', '#GratitudeInMotion', '#ChampionGenuineImpact'];
   lines.push('', [...new Set(tags.filter(Boolean))].join(' '));
   return lines.join('\n');
 }
+// The BODM caption doubles as the GC message: who is in, who still needs to reply.
+function bodmCaption() {
+  const head = [state.mNo, state.mYear, state.mTitle].map(s => (s || '').trim()).filter(Boolean).join(' ');
+  const d = fmtDate(state.date), t = fmtTime(state.t1, state.t2), place = [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ');
+  const yes = roster.filter(m => m.on), wait = roster.filter(m => !m.on);
+  const lines = ['📌 ' + head, ''];
+  if (d) lines.push('📅 ' + d); if (t) lines.push('🕢 ' + t); if (place) lines.push('📍 ' + place);
+  lines.push('', `✅ Attending (${yes.length}):`); (yes.length ? yes : [{ name: 'none yet' }]).forEach(m => lines.push('• ' + m.name));
+  if (wait.length) { lines.push('', `⏳ Waiting for confirmation (${wait.length}):`); wait.forEach(m => lines.push('• ' + m.name)); }
+  const close = [state.band, state.bandHi].map(s => (s || '').trim()).filter(Boolean).join(' ');
+  if (close) lines.push('', close);
+  lines.push('', 'SALAMAT. Gratitude in Motion. 💙');
+  return lines.join('\n');
+}
 function caption() {
   if (state.mode === 'recap') return recapCaption();
+  if (state.mode === 'bodm') return bodmCaption();
   const title = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).join(' ');
   const chip = (state.chip || '').trim();
   const lines = [];
@@ -472,47 +668,35 @@ const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(
 form.addEventListener('input', e => {
   const el = e.target; if (!el.name || el.name === 'mode' || !(el.name in state)) return;
   state[el.name] = el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value;
+  if (state.mode === 'bodm') saveMeeting();
   schedule();
 });
 $('#cap').addEventListener('input', () => { captionEdited = true; });
 
-/* ---------- announcement vs project done ---------- */
+/* ---------- three kinds: announcement, project done, BOD meeting ---------- */
+let projStash = null; // the project form, kept while the secretary is on the BODM tab
 function applyMode() {
-  document.querySelectorAll('[data-only]').forEach(el => { el.hidden = el.dataset.only !== state.mode; });
+  document.querySelectorAll('[data-only]').forEach(el => { el.hidden = !el.dataset.only.split(' ').includes(state.mode); });
   document.querySelectorAll('input[name=mode]').forEach(r => { r.checked = r.value === state.mode; });
+  const u = new URL(location.href); u.searchParams.set('type', { announce: 'announce', recap: 'done', bodm: 'bodm' }[state.mode]);
+  history.replaceState(null, '', u);
 }
 function setMode(m) {
   if (m === state.mode) return;
-  const from = MODE_DEFAULTS[state.mode], to = MODE_DEFAULTS[m];
-  for (const k of Object.keys(to)) if (!(state[k] || '').trim() || state[k] === from[k]) state[k] = to[k];
-  // an invitation closing line ("See you in Tabunok!") never fits a recap
-  if (m === 'recap' && /^see you/i.test(state.band || '')) { state.band = to.band; state.bandHi = to.bandHi; }
-  state.mode = m;
-  if (m === 'recap' && !images.photos.length) images.photos = [images.hero, images.rec].filter(Boolean).map(img => ({ src: img.src, img }));
-  captionEdited = false; fillForm(); applyMode(); drawPhotoList(); schedule();
+  if (m === 'bodm') { projStash = { state: { ...state }, hero: images.hero }; state = loadMeeting(); }
+  else {
+    if (state.mode === 'bodm') { saveMeeting(); state = projStash ? { ...projStash.state } : { ...EXAMPLE }; }
+    if (state.mode !== m) {
+      const from = MODE_DEFAULTS[state.mode], to = MODE_DEFAULTS[m];
+      for (const k of Object.keys(to)) if (!(state[k] || '').trim() || state[k] === from[k]) state[k] = to[k];
+      // an invitation closing line ("See you in Tabunok!") never fits a post-op
+      if (m === 'recap' && /^see you/i.test(state.band || '')) { state.band = to.band; state.bandHi = to.bandHi; }
+      state.mode = m;
+    }
+  }
+  captionEdited = false; fillForm(); applyMode(); drawRoster(); schedule();
 }
 document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => setMode(r.value)));
-
-$('#photosIn').addEventListener('change', async e => {
-  for (const f of [...e.target.files]) {
-    if (images.photos.length >= 6) { toast('Up to 6 photos'); break; }
-    const im = await fileImg(f); images.photos.push({ src: im.src, img: shrink(im) });
-  }
-  e.target.value = ''; drawPhotoList(); schedule();
-});
-function drawPhotoList() {
-  const box = $('#photoList'); box.replaceChildren();
-  images.photos.forEach((p, i) => {
-    const fig = document.createElement('figure'), img = document.createElement('img'), tools = document.createElement('div');
-    img.src = p.src; img.alt = `Photo ${i + 1}`;
-    if (i === 0) { const tag = document.createElement('span'); tag.className = 'big'; tag.textContent = 'Big photo'; tools.append(tag); }
-    else { const up = document.createElement('button'); up.type = 'button'; up.textContent = 'Make big'; up.onclick = () => { images.photos.unshift(...images.photos.splice(i, 1)); drawPhotoList(); schedule(); }; tools.append(up); }
-    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'Remove';
-    rm.onclick = () => { images.photos.splice(i, 1); drawPhotoList(); schedule(); };
-    tools.append(rm); fig.append(img, tools); box.append(fig);
-  });
-  $('#photoCount').textContent = images.photos.length ? `${images.photos.length} of 6` : 'none yet';
-}
 
 const themesBox = $('#themes');
 for (const [key, t] of Object.entries(THEMES)) {
@@ -521,7 +705,7 @@ for (const [key, t] of Object.entries(THEMES)) {
   themesBox.append(l);
 }
 
-$('#heroIn').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { images.hero = await fileImg(f); state.hz = 100; state.hx = 50; state.hy = 40; fillForm(); schedule(); } });
+$('#heroIn').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { images.hero = shrink(await fileImg(f), 2200); state.hz = 100; state.hx = 50; state.hy = 40; fillForm(); schedule(); } });
 $('#recIn').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { images.rec = await fileImg(f); state.recOn = true; fillForm(); schedule(); } });
 $('#logoIn').addEventListener('change', async e => {
   for (const f of [...e.target.files]) { if (images.logos.length >= 3) { toast('Up to 3 logos'); break; } const im = await fileImg(f); images.logos.push({ src: im.src, draw: prepLogo(im) }); }
@@ -531,34 +715,114 @@ function drawLogoList() {
   const box = $('#logoList'); box.replaceChildren();
   images.logos.forEach((l, i) => {
     const fig = document.createElement('figure'), img = document.createElement('img'), b = document.createElement('button');
-    img.src = l.src; img.alt = `Partner logo ${i + 1}`; b.type = 'button'; b.textContent = 'Remove';
+    img.src = l.src; img.alt = l.name || `Partner logo ${i + 1}`; b.type = 'button'; b.textContent = 'Remove';
     b.onclick = () => { images.logos.splice(i, 1); drawLogoList(); schedule(); };
     fig.append(img, b); box.append(fig);
   });
+  document.querySelectorAll('#partnerPick button').forEach(b => b.setAttribute('aria-pressed', images.logos.some(l => l.key === b.dataset.key)));
 }
 
+// tap a confirmed partner to put its logo on; its name goes into the caption too
+const pick = $('#partnerPick');
+PARTNER_LOGOS.forEach(([file, name]) => {
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.key = file; b.title = name; b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = `<img src="assets/partners/${file}" alt="" loading="lazy"><span>${name}</span>`;
+  b.onclick = async () => {
+    const i = images.logos.findIndex(l => l.key === file);
+    if (i >= 0) { images.logos.splice(i, 1); drawLogoList(); schedule(); return; }
+    if (images.logos.length >= 3) { toast('Up to 3 logos. Remove one first.'); return; }
+    const im = await loadImg(`assets/partners/${file}`);
+    images.logos.push({ key: file, name, src: im.src, draw: prepLogo(im) });
+    const p = (state.partners || '').trim();
+    if (!p.toLowerCase().includes(name.toLowerCase())) { state.partners = p ? `${p} and ${name}`.replace(/ and (.*) and /, ', $1 and ') : name; fillForm(); }
+    drawLogoList(); schedule();
+  };
+  pick.append(b);
+});
+
+/* ---------- BOD meeting roster ---------- */
+function drawRoster() {
+  const box = $('#roster'); if (!box) return; box.replaceChildren();
+  roster.forEach((m, i) => {
+    const li = document.createElement('li'); li.className = m.on ? 'on' : '';
+    const lab = document.createElement('label'), cb = document.createElement('input'), img = document.createElement('img'), txtBox = document.createElement('span');
+    cb.type = 'checkbox'; cb.checked = m.on; cb.setAttribute('aria-label', `${m.name} is attending`);
+    cb.onchange = () => { m.on = cb.checked; li.className = m.on ? 'on' : ''; saveRoster(); countRoster(); captionEdited = false; schedule(); };
+    img.src = m.photo || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; img.alt = '';
+    const nm = document.createElement('b'), rl = document.createElement('small');
+    nm.textContent = m.name; rl.textContent = m.role + (SOFT_PHOTOS.has(m.id) && m.photo === `assets/bod/${m.id}.jpg` ? ' · 📷 better photo needed' : '');
+    txtBox.append(nm, rl); lab.append(cb, img, txtBox);
+    const tools = document.createElement('div');
+    const ph = document.createElement('button'); ph.type = 'button'; ph.textContent = '📷'; ph.setAttribute('aria-label', `Change ${m.name}'s photo`); ph.title = 'Change photo';
+    ph.onclick = () => pickPhoto(async url => { m.photo = url; await loadFace(m); saveRoster(); drawRoster(); schedule(); });
+    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = '✕'; rm.setAttribute('aria-label', `Remove ${m.name}`);
+    rm.onclick = () => { if (confirm(`Remove ${m.name} from the list?`)) { roster.splice(i, 1); saveRoster(); drawRoster(); schedule(); } };
+    tools.append(ph, rm); li.append(lab, tools); box.append(li);
+  });
+  countRoster();
+}
+function countRoster() { const n = roster.filter(m => m.on).length; $('#rosterCount').textContent = `${n} of ${roster.length} attending`; }
+// photos picked here are shrunk and kept on this phone
+function pickPhoto(done) {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = async () => {
+    const f = inp.files[0]; if (!f) return;
+    const im = await fileImg(f), s = Math.min(im.naturalWidth, im.naturalHeight), c = document.createElement('canvas'); c.width = c.height = 320;
+    const x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
+    x.drawImage(im, (im.naturalWidth - s) / 2, Math.max(0, (im.naturalHeight - s) * .2), s, s, 0, 0, 320, 320);
+    done(c.toDataURL('image/jpeg', .85));
+  };
+  inp.click();
+}
+$('#toPreview').onclick = () => $('.preview').scrollIntoView({ behavior: 'smooth' });
+$('#allOn').onclick = () => { roster.forEach(m => { m.on = true; }); saveRoster(); drawRoster(); captionEdited = false; schedule(); };
+$('#allOff').onclick = () => { roster.forEach(m => { m.on = false; }); saveRoster(); drawRoster(); captionEdited = false; schedule(); };
+let newPhoto = null;
+$('#addPhoto').onclick = () => pickPhoto(url => { newPhoto = url; $('#addPhotoName').textContent = 'Photo added ✓'; });
+$('#addMember').onclick = async () => {
+  const name = $('#addName').value.trim(); if (!name) { toast('Type a name first'); $('#addName').focus(); return; }
+  const m = { id: 'x' + Date.now(), name, short: $('#addShort').value.trim() || name, role: $('#addRole').value.trim() || 'Guest', photo: newPhoto, on: true };
+  roster.push(m); await loadFace(m); saveRoster(); drawRoster(); schedule();
+  $('#addName').value = $('#addShort').value = $('#addRole').value = ''; newPhoto = null; $('#addPhotoName').textContent = ''; toast(`${name} added`);
+};
+$('#resetRoster').onclick = async () => {
+  if (!confirm('Go back to the 2027 board list? Added names and changed photos will be cleared.')) return;
+  roster = BOARD_2027.map(m => ({ ...m })); await Promise.all(roster.map(loadFace)); saveRoster(); drawRoster(); schedule();
+};
+
 async function loadExample() {
-  if (state.mode === 'recap') {
-    state = { ...RECAP_EXAMPLE }; captionEdited = false;
-    const ims = await Promise.all(['samples/medical.jpg', 'samples/hydrate-cebu.jpg', 'samples/san-remigio.jpg', 'samples/kaagapay.jpg'].map(loadImg));
-    images.photos = ims.map(im => ({ src: im.src, img: im })); images.logos = [];
-    fillForm(); applyMode(); drawLogoList(); drawPhotoList(); render(); return;
+  captionEdited = false;
+  if (state.mode === 'bodm') {
+    state = { ...loadMeeting(), mNo: '1st', date: '', t1: '18:30', venue: 'JCI Annex Bldg.', area: 'Pelaez St., Kamagayan, Cebu City' };
+    saveMeeting(); fillForm(); applyMode(); drawRoster(); render(); return;
   }
-  state = { ...EXAMPLE }; captionEdited = false;
+  if (state.mode === 'recap') {
+    state = { ...RECAP_EXAMPLE };
+    images.hero = await loadImg('samples/san-remigio.jpg'); images.logos = [];
+    fillForm(); applyMode(); drawLogoList(); render(); return;
+  }
+  state = { ...EXAMPLE };
   const [h, r, l1, l2] = await Promise.all(['samples/medical.jpg', 'samples/san-remigio.jpg', 'samples/my-mountain-mover.png', 'samples/greater-heights.png'].map(loadImg));
   images.hero = h; images.rec = r; images.logos = [l1, l2].map(im => ({ src: im.src, draw: prepLogo(im) }));
   fillForm(); applyMode(); drawLogoList(); render();
 }
 $('#example').onclick = loadExample;
 $('#blank').onclick = () => {
-  const m = state.mode;
-  state = { ...BLANK, ...MODE_DEFAULTS[m], mode: m }; images.hero = null; images.rec = null; images.logos = []; images.photos = []; captionEdited = false;
-  fillForm(); applyMode(); drawLogoList(); drawPhotoList(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  const m = state.mode; captionEdited = false;
+  if (m === 'bodm') {
+    state = { ...loadMeeting(), date: '', mNo: '' }; roster.forEach(r => { r.on = false; }); saveRoster(); saveMeeting();
+    fillForm(); applyMode(); drawRoster(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+  }
+  state = { ...BLANK, ...MODE_DEFAULTS[m], mode: m }; images.hero = null; images.rec = null; images.logos = [];
+  fillForm(); applyMode(); drawLogoList(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 /* ---------- export ---------- */
-const fileName = () => (state.mode === 'recap' ? 'recap-' : 'pubmat-') + ([state.h1, state.h2].join(' ').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'jci-cebu') + '.jpg';
-const blob = () => new Promise(res => cv.toBlob(res, 'image/jpeg', .93));
+const slug = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const fileName = () => state.mode === 'bodm'
+  ? `bodm-attendance-${slug([state.mNo, state.date].join(' ')) || 'jci-cebu'}.jpg`
+  : (state.mode === 'recap' ? 'done-' : 'pubmat-') + (slug([state.h1, state.h2].join(' ')) || 'jci-cebu') + '.jpg';
+const blob = (type = 'image/jpeg') => new Promise(res => cv.toBlob(res, type, .93));
 $('#dl').onclick = async () => {
   render(); const b = await blob(), a = document.createElement('a');
   a.href = URL.createObjectURL(b); a.download = fileName(); document.body.append(a); a.click(); a.remove();
@@ -572,19 +836,32 @@ if (navigator.canShare) {
     else toast('Sharing files is not supported here. Use Download.');
   };
 }
+// copy the pubmat itself, to paste straight into Messenger on a laptop
+if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+  const c = $('#copyImg'); c.hidden = false;
+  c.onclick = async () => {
+    render();
+    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob('image/png') })]); toast('Pubmat copied. Paste it in the chat.'); }
+    catch { toast('Copying images is not supported here. Use Download or Share.'); }
+  };
+}
 $('#copy').onclick = async () => {
-  try { await navigator.clipboard.writeText($('#cap').value); toast('Caption copied'); }
-  catch { $('#cap').select(); toast('Select and copy the caption'); }
+  try { await navigator.clipboard.writeText($('#cap').value); toast(state.mode === 'bodm' ? 'Attendance list copied' : 'Caption copied'); }
+  catch { $('#cap').select(); toast('Select and copy the text'); }
 };
-let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 1800); }
+let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
 
 /* ---------- start ---------- */
 (async () => {
-  try { await Promise.all([500, 700, 800, 400].map(w => document.fonts.load(`${w} 40px "Plus Jakarta Sans"`))); } catch {}
+  try { await Promise.all([500, 600, 700, 800, 400].map(w => document.fonts.load(`${w} 40px "Plus Jakarta Sans"`))); } catch {}
   [assets.stripNavy, assets.stripWhite, assets.footer] = await Promise.all(
     ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png'].map(s => loadImg(s).catch(() => null)));
-  // ?type=done opens straight on the "Project done" recap
-  if (/[?&]type=(done|recap)/.test(location.search)) state.mode = 'recap';
+  await Promise.all(roster.map(loadFace));
+  drawRoster();
+  // ?type=done opens on "Project done", ?type=bodm on the BOD meeting attendance
+  const t = (location.search.match(/[?&]type=(\w+)/) || [])[1];
+  if (t === 'bodm') { projStash = { state: { ...EXAMPLE }, hero: null }; state = loadMeeting(); fillForm(); applyMode(); drawRoster(); render(); return; }
+  if (t === 'done' || t === 'recap') state.mode = 'recap';
   fillForm(); applyMode();
   await loadExample();
 })();

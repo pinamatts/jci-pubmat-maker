@@ -68,13 +68,31 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
 .photos img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
 .photos div{display:flex;flex-wrap:wrap;gap:6px;padding:8px}
 .photos button{padding:4px 10px;min-height:32px;font-size:13px}
-.photos .big{font-size:12px;font-weight:800;color:#130F2D;background:var(--yellow);border-radius:999px;padding:5px 10px}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.pick button{flex-direction:column;justify-content:center;gap:6px;padding:8px 6px;min-height:92px;background:#fff;color:#130F2D;border:2px solid #cdd6e4;font-size:11.5px;font-weight:700;line-height:1.2;text-align:center}
+.pick img{height:40px;max-width:84px;object-fit:contain}
+.pick button[aria-pressed=true]{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue)}
+.pick button[aria-pressed=true]::after{content:'✓ Added';font-size:11px;color:var(--blue)}
+.roster{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.roster li{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:6px 8px}
+.roster li.on{border-color:var(--teal);background:#16345a}
+.roster label{flex:1;display:flex;align-items:center;gap:10px;cursor:pointer;min-height:56px;font-weight:600}
+.roster input{width:26px;height:26px;flex:none}
+.roster img{width:46px;height:46px;border-radius:50%;object-fit:cover;flex:none;background:#dfe8f1}
+.roster b{display:block;font-size:15px;color:var(--ink)}
+.roster small{display:block;color:var(--mute);font-size:12.5px;font-weight:500}
+.roster div{display:flex;gap:4px;flex:none}
+.roster div button{padding:0;min-height:40px;min-width:40px;justify-content:center;font-size:16px}
+.roster div button:disabled{opacity:.35}
+.count{font-weight:800;color:var(--teal)}
+details{border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+summary{cursor:pointer;font-weight:700}
 </style>
 </head>
 <body>
 <header>
   <h1>JCI Cebu Pubmat Maker</h1>
-  <p>Make an <strong>announcement</strong> before your project or a <strong>project done</strong> recap with action photos after it. Fill in the form and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
+  <p>Make an <strong>announcement</strong> before your project, a <strong>project done</strong> post-op with the group photo after it, or the <strong>BOD meeting attendance</strong> for the GC. Fill in the form and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
 </header>
 <main>
   <section class="preview" aria-label="Preview">
@@ -82,6 +100,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
     <div class="actions">
       <button class="primary" id="dl" type="button">⬇ Download pubmat</button>
       <button id="share" type="button" hidden>Share</button>
+      <button id="copyImg" type="button" hidden>Copy pubmat</button>
       <button id="copy" type="button">Copy caption</button>
     </div>
     <p class="note">1080 × 1350, ready for Facebook and Instagram. Photos stay on your phone; nothing is uploaded.</p>
@@ -92,11 +111,21 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
       <legend>What are you making?</legend>
       <div class="modes" role="radiogroup">
         <label><input type="radio" name="mode" value="announce"><span><b>📣 Announcement</b><small>before the project: date, time, venue, outfit</small></span></label>
-        <label><input type="radio" name="mode" value="recap"><span><b>✅ Project done</b><small>after the project: action photos and numbers</small></span></label>
+        <label><input type="radio" name="mode" value="recap"><span><b>✅ Project done</b><small>post-op: the group photo, “successfully implemented”, thank-you logos</small></span></label>
+        <label><input type="radio" name="mode" value="bodm"><span><b>🗓️ BOD meeting attendance</b><small>tick who is coming; the pubmat sorts everyone for the GC</small></span></label>
       </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset data-only="bodm">
+      <legend>Meeting</legend>
+      <div class="row">
+        <label>Which meeting <small>e.g. 1st, 2nd, 10th</small><input type="text" name="mNo" maxlength="8"></label>
+        <label>Year line<input type="text" name="mYear" maxlength="24"></label>
+      </div>
+      <label>Meeting name <small>shown in colour</small><input type="text" name="mTitle" maxlength="40"></label>
+    </fieldset>
+
+    <fieldset data-only="announce recap">
       <legend>Project</legend>
       <label>Project label <small>the dark pill at the top</small><input type="text" name="chip" maxlength="32"></label>
       <label>Small line above the title<input type="text" name="kicker" maxlength="40"></label>
@@ -104,18 +133,19 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
         <label>Title, line 1<input type="text" name="h1" maxlength="18"></label>
         <label>Title, line 2 <small>shown in colour</small><input type="text" name="h2" maxlength="18"></label>
       </div>
-      <div>
-        <div style="font-weight:600;font-size:14px;color:#d5def0;margin-bottom:6px">Colour</div>
-        <div class="themes" id="themes"></div>
-      </div>
       <label>Sticker on the photo <small>defaults to “Gratitude in Motion”, our 79th-year theme (SALAMAT). Keep it unless the project chair asks otherwise; clear it to hide.</small><input type="text" name="tag" maxlength="22"></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Colour</legend>
+      <div class="themes" id="themes"></div>
     </fieldset>
 
     <fieldset>
       <legend>When and where</legend>
       <div class="row">
         <label>Date<input type="date" name="date"></label>
-        <label data-only="announce">Starts<input type="time" name="t1"></label>
+        <label data-only="announce bodm">Starts<input type="time" name="t1"></label>
         <label data-only="announce">Ends<input type="time" name="t2"></label>
       </div>
       <label>Venue<input type="text" name="venue" maxlength="60"></label>
@@ -124,31 +154,49 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
       <label data-only="announce">Outfit <small>leave empty to hide</small><input type="text" name="outfit" maxlength="34"></label>
     </fieldset>
 
-    <fieldset>
+    <fieldset data-only="bodm">
+      <legend>Who's coming</legend>
+      <p class="note" style="margin:0">Tick everyone who confirmed. Anyone not ticked shows under “Waiting for confirmation”. Your ticks are saved on this phone, so come back and update them as replies come in, then send the new pubmat.</p>
+      <div class="actions" style="margin:0;align-items:center"><button type="button" id="allOn">Tick everyone</button><button type="button" id="allOff">Clear ticks</button><span class="count" id="rosterCount" aria-live="polite"></span></div>
+      <ul class="roster" id="roster"></ul>
+      <button type="button" class="primary" id="toPreview">See the pubmat ↑</button>
+      <label class="switch"><input type="checkbox" name="showNames" switch> Show names under the photos</label>
+      <details>
+        <summary>Add a member or guest, or reset the list</summary>
+        <div style="display:grid;gap:10px;margin-top:10px">
+          <label>Full name<input type="text" id="addName" maxlength="40"></label>
+          <div class="row">
+            <label>Name on the pubmat <small>short, e.g. Atty. Mark Veloso</small><input type="text" id="addShort" maxlength="24"></label>
+            <label>Position<input type="text" id="addRole" maxlength="50"></label>
+          </div>
+          <div class="actions" style="margin:0"><button type="button" id="addPhoto">Add a photo</button><span class="note" id="addPhotoName" style="margin:0"></span></div>
+          <div class="actions" style="margin:0"><button type="button" class="primary" id="addMember">Add to the list</button><button type="button" id="resetRoster">Reset to the 2027 board</button></div>
+          <p class="note" style="margin:0">Tap “Photo” on anyone to swap in a better headshot. Square, blue-tie studio photos look best.</p>
+        </div>
+      </details>
+    </fieldset>
+
+    <fieldset data-only="announce recap">
       <legend>Partners</legend>
       <label>Partner names <small>for the caption; also shown on the pubmat if you add no logo</small><input type="text" name="partners" maxlength="80"></label>
       <label>Line above the logos<input type="text" name="pLabel" maxlength="30"></label>
-      <div class="file"><label>Partner logos <small>up to 3; PNG with a clear background looks best</small><input type="file" id="logoIn" accept="image/*" multiple></label></div>
+      <div><div style="font-weight:600;font-size:14px;color:#d5def0;margin-bottom:6px">Our 2027 partners <small style="font-weight:500;color:var(--mute)">tap to add their logo, tap again to remove</small></div>
+      <div class="pick" id="partnerPick"></div></div>
+      <div class="file"><label>Another partner's logo <small>up to 3 logos in all; PNG with a clear background looks best</small><input type="file" id="logoIn" accept="image/*" multiple></label></div>
       <div class="logos" id="logoList"></div>
     </fieldset>
 
     <fieldset data-only="recap">
-      <legend>Action photos</legend>
-      <div class="file"><label>Photos <small>up to 6; pick several at once. The first one shows big. Check that everyone in them is OK to post.</small><input type="file" id="photosIn" accept="image/*" multiple></label></div>
-      <p class="note" style="margin:0">Added: <span id="photoCount">none yet</span></p>
-      <div class="photos" id="photoList"></div>
-    </fieldset>
-
-    <fieldset data-only="recap">
       <legend>Numbers</legend>
-      <p class="note" style="margin:0">Real counts only, from the project chair. Leave a pair empty to hide it; leave all empty for no number box.</p>
+      <p class="note" style="margin:0">Optional. Real counts only, from the project chair (e.g. 120 families served). Leave empty to hide.</p>
       <div class="row"><label>Number 1<input type="text" name="s1n" maxlength="8" inputmode="numeric"></label><label>What it counts<input type="text" name="s1l" maxlength="30"></label></div>
       <div class="row"><label>Number 2<input type="text" name="s2n" maxlength="8" inputmode="numeric"></label><label>What it counts<input type="text" name="s2l" maxlength="30"></label></div>
       <div class="row"><label>Number 3<input type="text" name="s3n" maxlength="8" inputmode="numeric"></label><label>What it counts<input type="text" name="s3l" maxlength="30"></label></div>
     </fieldset>
 
-    <fieldset data-only="announce">
-      <legend>Main photo</legend>
+    <fieldset data-only="announce recap">
+      <legend><span data-only="announce">Main photo</span><span data-only="recap">Group photo</span></legend>
+      <p class="note" data-only="recap" style="margin:0">One photo of everyone who joined, like every chapter's post-op. Check that everyone in it is OK to post.</p>
       <div class="file"><label>Photo<input type="file" id="heroIn" accept="image/*"></label></div>
       <div class="row">
         <label>Zoom<input type="range" name="hz" min="100" max="250"></label>
@@ -180,7 +228,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
 
     <fieldset>
       <legend>Caption</legend>
-      <label>Ready to paste <small>written from the form; you can edit it</small><textarea id="cap"></textarea></label>
+      <label><span data-only="announce recap">Ready to paste <small>written from the form; you can edit it</small></span><span data-only="bodm">Attendance list for the GC <small>paste it with the pubmat; it updates as you tick</small></span><textarea id="cap"></textarea></label>
     </fieldset>
 
     <div class="actions">
