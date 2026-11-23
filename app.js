@@ -856,7 +856,7 @@ let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classLis
 (async () => {
   try { await Promise.all([500, 600, 700, 800, 400].map(w => document.fonts.load(`${w} 40px "Plus Jakarta Sans"`))); } catch {}
   [assets.stripNavy, assets.stripWhite, assets.footer] = await Promise.all(
-    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=11c8461a'].map(s => loadImg(s).catch(() => null)));
+    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=a02aac5d'].map(s => loadImg(s).catch(() => null)));
   await Promise.all(roster.map(loadFace));
   drawRoster();
   // ?type=done opens on "Project done", ?type=bodm on the BOD meeting attendance
