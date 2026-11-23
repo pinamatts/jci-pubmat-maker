@@ -116,6 +116,62 @@
  },
  {
   "group": "JCI Cebu and JCI Philippines",
+  "title": "JCI Cebu (colour, the official one)",
+  "file": "JCI-Cebu-colour.png",
+  "thumb": "thumb-JCI-Cebu-colour.png",
+  "on": "light",
+  "w": 1718,
+  "h": 836,
+  "svg": "JCI-Cebu-colour.pdf"
+ },
+ {
+  "group": "JCI Cebu and JCI Philippines",
+  "title": "JCI Cebu (white and colour, for dark backgrounds)",
+  "file": "JCI-Cebu-white-and-colour.png",
+  "thumb": "thumb-JCI-Cebu-white-and-colour.png",
+  "on": "black",
+  "w": 1718,
+  "h": 836
+ },
+ {
+  "group": "JCI Cebu and JCI Philippines",
+  "title": "JCI Cebu (white with blue \u201cCebu\u201d, for dark backgrounds)",
+  "file": "JCI-Cebu-white-and-blue.png",
+  "thumb": "thumb-JCI-Cebu-white-and-blue.png",
+  "on": "black",
+  "w": 1718,
+  "h": 836
+ },
+ {
+  "group": "JCI Cebu and JCI Philippines",
+  "title": "JCI Philippines (colour, the official one)",
+  "file": "JCI-Philippines-colour.png",
+  "thumb": "thumb-JCI-Philippines-colour.png",
+  "on": "light",
+  "w": 1707,
+  "h": 856,
+  "svg": "JCI-Philippines-colour.pdf"
+ },
+ {
+  "group": "JCI Cebu and JCI Philippines",
+  "title": "JCI Philippines (white and colour, for dark backgrounds)",
+  "file": "JCI-Philippines-white-and-colour.png",
+  "thumb": "thumb-JCI-Philippines-white-and-colour.png",
+  "on": "black",
+  "w": 1707,
+  "h": 856
+ },
+ {
+  "group": "JCI Cebu and JCI Philippines",
+  "title": "JCI Philippines (white with blue \u201cPhilippines\u201d, for dark backgrounds)",
+  "file": "JCI-Philippines-white-and-blue.png",
+  "thumb": "thumb-JCI-Philippines-white-and-blue.png",
+  "on": "black",
+  "w": 1707,
+  "h": 856
+ },
+ {
+  "group": "JCI Cebu and JCI Philippines",
   "title": "JCI Cebu (black)",
   "file": "JCI-Cebu-black.png",
   "thumb": "thumb-JCI-Cebu-black.png",

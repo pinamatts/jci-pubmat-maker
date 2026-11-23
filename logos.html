@@ -30,6 +30,7 @@ h2{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--teal
 .sw{height:190px;display:flex;align-items:center;justify-content:center;padding:18px}
 .sw.light{background:#fff}
 .sw.dark{background:#0b1a3a}
+.sw.black{background:#130F2D}
 .sw.photo{background:#0b1a3a;padding:0}
 .sw img{max-width:100%;max-height:100%;object-fit:contain}
 .sw.photo img{width:100%;height:100%;object-fit:contain}
@@ -47,7 +48,7 @@ footer{padding:32px 0 40px;color:var(--mute);font-size:13px}
 <header>
   <a class="back" href="./">← Pubmat Maker</a>
   <h1>JCI Cebu logos, 2027</h1>
-  <p>The official files for slides, pubmats and print. Tap a logo to download it. PNGs have clear backgrounds. SVG is the vector version, sharp at any size; use it for slides and print when it's there.</p>
+  <p>The official files for slides, pubmats and print. Tap a logo to download it. PNGs have clear backgrounds. SVG and PDF are the vector versions, sharp at any size; use them for slides and print when they're there.</p>
   <div class="top">
     <a class="btn primary" href="logos/JCI-Cebu-2027-logos.zip" download>⬇ Download all (.zip)</a>
   </div>
@@ -65,7 +66,7 @@ footer{padding:32px 0 40px;color:var(--mute);font-size:13px}
 </div>
 <script>
 (async () => {
-  const items = await fetch('logos/logos.json?v=3').then(r => r.json());
+  const items = await fetch('logos/logos.json?v=4').then(r => r.json());
   const list = document.getElementById('list'), groups = new Map();
   for (const it of items) { if (!groups.has(it.group)) groups.set(it.group, []); groups.get(it.group).push(it); }
   for (const [g, arr] of groups) {
@@ -81,7 +82,7 @@ footer{padding:32px 0 40px;color:var(--mute);font-size:13px}
       const dl = document.createElement('div'); dl.className = 'dl';
       const ext = it.file.split('.').pop().toUpperCase();
       const a = document.createElement('a'); a.className = 'btn primary'; a.href = 'logos/' + it.file; a.download = it.file; a.textContent = '⬇ ' + ext; dl.append(a);
-      if (it.svg) { const v = document.createElement('a'); v.className = 'btn'; v.href = 'logos/' + it.svg; v.download = it.svg; v.textContent = '⬇ SVG'; dl.append(v); }
+      if (it.svg) { const v = document.createElement('a'); v.className = 'btn'; v.href = 'logos/' + it.svg; v.download = it.svg; v.textContent = '⬇ ' + it.svg.split('.').pop().toUpperCase(); dl.append(v); }
       meta.append(b, s, dl); card.append(sw, meta); grid.append(card);
     }
   }
