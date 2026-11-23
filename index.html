@@ -92,7 +92,7 @@ summary{cursor:pointer;font-weight:700}
 <body>
 <header>
   <h1>JCI Cebu Pubmat Maker</h1>
-  <p>Make an <strong>announcement</strong> before your project, a <strong>project done</strong> post-op with the group photo after it, or the <strong>BOD meeting attendance</strong> for the GC. Fill in the form and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
+  <p>Make an <strong>announcement</strong> before your project, a <strong>project done</strong> photo set after it (every photo framed the same, posted as one album), a single <strong>recap card</strong>, or the <strong>BOD meeting attendance</strong> for the GC. Fill in the form and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
 </header>
 <main>
   <section class="preview" aria-label="Preview">
@@ -111,7 +111,8 @@ summary{cursor:pointer;font-weight:700}
       <legend>What are you making?</legend>
       <div class="modes" role="radiogroup">
         <label><input type="radio" name="mode" value="announce"><span><b>📣 Announcement</b><small>before the project: date, time, venue, outfit</small></span></label>
-        <label><input type="radio" name="mode" value="recap"><span><b>✅ Project done</b><small>post-op: the group photo, “successfully implemented”, thank-you logos</small></span></label>
+        <label><input type="radio" name="mode" value="photos"><span><b>✅ Project done</b><small>post-op: every project photo in the same frame, posted together as one album</small></span></label>
+        <label><input type="radio" name="mode" value="recap"><span><b>🏁 Recap card</b><small>one designed card: the group photo, “successfully implemented”, thank-you logos</small></span></label>
         <label><input type="radio" name="mode" value="bodm"><span><b>🗓️ BOD meeting attendance</b><small>tick who is coming; the pubmat sorts everyone for the GC</small></span></label>
       </div>
     </fieldset>
@@ -136,7 +137,25 @@ summary{cursor:pointer;font-weight:700}
       <label>Sticker on the photo <small>defaults to “Gratitude in Motion”, our 79th-year theme (SALAMAT). Keep it unless the project chair asks otherwise; clear it to hide.</small><input type="text" name="tag" maxlength="22"></label>
     </fieldset>
 
-    <fieldset>
+    <fieldset data-only="photos">
+      <legend>Project photos</legend>
+      <p class="note" style="margin:0">Add all the photos you want to post. Each one gets the same frame: our 2027 logos, the area pill and the partner footer. Check that everyone in them is OK to post.</p>
+      <div class="file"><label>Add photos <small>pick several at once; up to 20</small><input type="file" id="setIn" accept="image/*" multiple></label></div>
+      <div class="actions" style="margin:0;align-items:center"><button type="button" id="prevP">◀ Previous</button><button type="button" id="nextP">Next ▶</button><span class="count" id="setCount" aria-live="polite"></span></div>
+      <div class="photos" id="setList"></div>
+      <div class="row">
+        <label>Zoom <small>for the photo in the preview</small><input type="range" id="setZ" min="100" max="250" value="100"></label>
+        <label>Up / down<input type="range" id="setFy" min="0" max="100" value="40"></label>
+      </div>
+      <label>Area pill <small>the white outline label, bottom left; clear it to hide</small><input type="text" name="pill" maxlength="34" list="areas"></label>
+      <datalist id="areas">
+        <option value="Community Development"><option value="Business Development"><option value="Individual Development">
+        <option value="International Affairs"><option value="Organizational Development"><option value="Training"><option value="Membership"><option value="Fellowship">
+      </datalist>
+      <label>Project name <small>for the caption</small><input type="text" name="pname" maxlength="60"></label>
+    </fieldset>
+
+    <fieldset data-only="announce recap bodm">
       <legend>Colour</legend>
       <div class="themes" id="themes"></div>
     </fieldset>
@@ -176,14 +195,15 @@ summary{cursor:pointer;font-weight:700}
       </details>
     </fieldset>
 
-    <fieldset data-only="announce recap">
+    <fieldset data-only="announce recap photos">
       <legend>Partners</legend>
-      <label>Partner names <small>for the caption; also shown on the pubmat if you add no logo</small><input type="text" name="partners" maxlength="80"></label>
-      <label>Line above the logos<input type="text" name="pLabel" maxlength="30"></label>
-      <div><div style="font-weight:600;font-size:14px;color:#d5def0;margin-bottom:6px">Our 2027 partners <small style="font-weight:500;color:var(--mute)">tap to add their logo, tap again to remove</small></div>
+      <p class="note" data-only="photos" style="margin:0">The confirmed-partners footer is on every photo. Name the project's own partners here to thank them in the caption.</p>
+      <label>Partner names <small data-only="announce recap">for the caption; also shown on the pubmat if you add no logo</small><small data-only="photos">for the caption</small><input type="text" name="partners" maxlength="80"></label>
+      <label data-only="announce recap">Line above the logos<input type="text" name="pLabel" maxlength="30"></label>
+      <div data-only="announce recap"><div style="font-weight:600;font-size:14px;color:#d5def0;margin-bottom:6px">Our 2027 partners <small style="font-weight:500;color:var(--mute)">tap to add their logo, tap again to remove</small></div>
       <div class="pick" id="partnerPick"></div></div>
-      <div class="file"><label>Another partner's logo <small>up to 3 logos in all; PNG with a clear background looks best</small><input type="file" id="logoIn" accept="image/*" multiple></label></div>
-      <div class="logos" id="logoList"></div>
+      <div class="file" data-only="announce recap"><label>Another partner's logo <small>up to 3 logos in all; PNG with a clear background looks best</small><input type="file" id="logoIn" accept="image/*" multiple></label></div>
+      <div class="logos" id="logoList" data-only="announce recap"></div>
     </fieldset>
 
     <fieldset data-only="recap">
@@ -216,7 +236,7 @@ summary{cursor:pointer;font-weight:700}
     </fieldset>
 
     <fieldset>
-      <legend>Closing line</legend>
+      <legend><span data-only="announce recap bodm">Closing line</span><span data-only="photos">Thank-you line <small>for the caption</small></span></legend>
       <div class="row">
         <label>Text<input type="text" name="band" maxlength="30"></label>
         <label>Words in colour<input type="text" name="bandHi" maxlength="20"></label>
@@ -228,7 +248,7 @@ summary{cursor:pointer;font-weight:700}
 
     <fieldset>
       <legend>Caption</legend>
-      <label><span data-only="announce recap">Ready to paste <small>written from the form; you can edit it</small></span><span data-only="bodm">Attendance list for the GC <small>paste it with the pubmat; it updates as you tick</small></span><textarea id="cap"></textarea></label>
+      <label><span data-only="announce recap photos">Ready to paste <small>written from the form; you can edit it</small></span><span data-only="bodm">Attendance list for the GC <small>paste it with the pubmat; it updates as you tick</small></span><textarea id="cap"></textarea></label>
     </fieldset>
 
     <div class="actions">
@@ -239,6 +259,6 @@ summary{cursor:pointer;font-weight:700}
 </main>
 <footer>JCI Cebu · 79th year. Check names, dates and partner details with the project chair before posting.</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=a02aac5d"></script>
+<script src="app.js?v=644d4ad8"></script>
 </body>
 </html>

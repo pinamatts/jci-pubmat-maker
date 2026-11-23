@@ -36,7 +36,7 @@ const BLANK = {
   chip: 'Community project', kicker: 'JCI Cebu', h1: 'Project', h2: 'Title', theme: 'sky',
   date: '', t1: '', t2: '', venue: '', area: '', meet: '', outfit: '', partners: '', pLabel: 'In partnership with',
   hz: 100, hx: 50, hy: 40, tag: 'Gratitude in motion', recOn: false, ry: 40, rLabel: 'On the record', rTitle: '', rBody: '',
-  band: 'See you', bandHi: 'there!', hashtag: 'JCICebu',
+  band: 'See you', bandHi: 'there!', hashtag: 'JCICebu', pname: '', pill: '',
 };
 
 // Post-op example: the San Remigio Impact Immersion group photo (May 2025). No numbers: only real counts go on.
@@ -48,6 +48,7 @@ const RECAP_EXAMPLE = {
 const MODE_DEFAULTS = {
   announce: { kicker: 'JCI Cebu community project', band: 'See you', bandHi: 'there!', pLabel: 'In partnership with' },
   recap: { kicker: 'Successfully implemented', band: 'SALAMAT to everyone', bandHi: 'who made it happen!', pLabel: 'Thank you to our partners' },
+  photos: { kicker: 'Successfully implemented', band: 'SALAMAT to everyone', bandHi: 'who made it happen!', pLabel: 'Thank you to our partners' },
 };
 // Confirmed 2027 partners (same roster as the footer), so nobody has to hunt for a logo file.
 const PARTNER_LOGOS = [
@@ -59,7 +60,8 @@ const PARTNER_LOGOS = [
   ['sandoni.png', 'Sandoni'], ['djryss.png', 'DJ Ryss'],
 ];
 let state = { ...EXAMPLE };
-const images = { hero: null, rec: null, logos: [], photos: [] }; // logos: [{src, draw}], photos: [{src, img}]
+const images = { hero: null, rec: null, logos: [], photos: [], set: [] }; // set: the project-done photo set [{img, fy, z}]
+let sel = 0; // which photo of the set is in the preview // logos: [{src, draw}], photos: [{src, img}]
 const assets = {};
 let captionEdited = false;
 
@@ -506,11 +508,82 @@ function renderBodm(T) {
   if (wait.length) { y += 18 + Math.min(60, spare * .45); drawGroup(wait, 'wait', 'Waiting for confirmation'); }
   drawBandAndFooter(T);
 }
+/* ---------- Project done: the photo set ----------
+   Like the chapter's own post-op posts (Biz D.A.K. Exchange, Nov 2026): every photo of the
+   project gets the same frame, and they go up together as one album post. The frame: the
+   2027 line-up split in two (JCIP + JCI Cebu top-left, Champion Genuine Impact | El Vinta +
+   SALAMAT bottom-right), a JCI-blue glow down the left edge, the area pill bottom-left, and
+   the confirmed-partners footer under the photo. */
+function renderPhoto(i) {
+  const ph = images.set[i], PH = FOOT_Y;
+  ctx.fillStyle = '#0b1a3a'; ctx.fillRect(0, 0, W, PH);
+  if (ph) { ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, PH); ctx.clip(); cover(ph.img, 0, 0, W, PH, .5, ph.fy / 100, ph.z / 100); ctx.restore(); }
+  else placeholder(0, 0, W, PH, 'Add your project photos');
+  // JCI-blue glow down the left edge, a soft top for the logos, a soft bottom for the pill
+  let g = ctx.createLinearGradient(0, 0, 360, 0);
+  g.addColorStop(0, 'rgba(0,110,230,.88)'); g.addColorStop(.3, 'rgba(0,140,225,.45)'); g.addColorStop(1, 'rgba(0,151,215,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 360, PH);
+  g = ctx.createRadialGradient(0, 0, 0, 0, 0, 520);
+  g.addColorStop(0, 'rgba(0,90,200,.55)'); g.addColorStop(1, 'rgba(0,90,200,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 620, 520);
+  g = ctx.createLinearGradient(0, PH - 260, 0, PH);
+  g.addColorStop(0, 'rgba(6,18,46,0)'); g.addColorStop(1, 'rgba(6,18,46,.6)');
+  ctx.fillStyle = g; ctx.fillRect(0, PH - 260, W, 260);
+  // logos
+  if (assets.frameTop) { const h = 92; ctx.drawImage(assets.frameTop, 52, 50, assets.frameTop.width * h / assets.frameTop.height, h); }
+  const bh = 78, bw = assets.frameBot ? assets.frameBot.width * bh / assets.frameBot.height : 0;
+  if (assets.frameBot) ctx.drawImage(assets.frameBot, W - 52 - bw, PH - 46 - bh, bw, bh);
+  // area pill
+  const pill = (state.pill || '').trim();
+  if (pill) {
+    F(600, 27); const maxW = W - 52 - bw - 40 - 52; let t = pill;
+    while (tw(t) + 64 > maxW && t.length > 3) t = t.slice(0, -2) + '…';
+    const pw = tw(t) + 64, ph2 = 62, px = 52, py = PH - 46 - ph2 - (bh - ph2) / 2;
+    ctx.fillStyle = 'rgba(8,24,60,.28)'; rr(px, py, pw, ph2, ph2 / 2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; rr(px, py, pw, ph2, ph2 / 2); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; txt(t, px + 32, py + ph2 / 2 + 1); ctx.textBaseline = 'alphabetic';
+  }
+  // confirmed-partners footer (locked)
+  if (assets.footer) ctx.drawImage(assets.footer, 0, FOOT_Y, W, H - FOOT_Y);
+}
+function drawSetList() {
+  const box = $('#setList'); if (!box) return; box.replaceChildren();
+  images.set.forEach((p, i) => {
+    const fig = document.createElement('figure'), img = document.createElement('img'), d = document.createElement('div');
+    img.src = p.thumb; img.alt = `Photo ${i + 1}`; if (i === sel) fig.style.outline = '3px solid var(--yellow)';
+    img.onclick = () => selectPhoto(i);
+    const mk = (t, f, lab) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.setAttribute('aria-label', lab); b.onclick = f; d.append(b); return b; };
+    mk('Show', () => selectPhoto(i), `Show photo ${i + 1}`);
+    mk('◀', () => { if (i > 0) { images.set.splice(i - 1, 0, images.set.splice(i, 1)[0]); sel = i - 1; drawSetList(); schedule(); } }, `Move photo ${i + 1} earlier`).disabled = i === 0;
+    mk('▶', () => { if (i < images.set.length - 1) { images.set.splice(i + 1, 0, images.set.splice(i, 1)[0]); sel = i + 1; drawSetList(); schedule(); } }, `Move photo ${i + 1} later`).disabled = i === images.set.length - 1;
+    mk('✕', () => { images.set.splice(i, 1); sel = Math.max(0, Math.min(sel, images.set.length - 1)); drawSetList(); syncSetSliders(); schedule(); }, `Remove photo ${i + 1}`);
+    fig.append(img, d); box.append(fig);
+  });
+  const n = images.set.length;
+  $('#setCount').textContent = n ? `Photo ${sel + 1} of ${n} in the preview` : 'No photos yet';
+  $('#dl').textContent = state.mode === 'photos' && n > 1 ? `⬇ Download all ${n} photos` : '⬇ Download pubmat';
+}
+function syncSetSliders() { const p = images.set[sel]; $('#setFy').value = p ? p.fy : 40; $('#setZ').value = p ? p.z : 100; }
+function selectPhoto(i) { sel = i; drawSetList(); syncSetSliders(); schedule(); $('.preview').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function thumbOf(img) { const c = document.createElement('canvas'), w = img.width, h = img.height, k = 240 / Math.max(w, h); c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', .8); }
+function photosCaption() {
+  const name = (state.pname || '').trim() || 'our project', pill = (state.pill || '').trim(), partners = (state.partners || '').trim();
+  const d = fmtDate(state.date), place = [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ');
+  const lines = [name + (pill ? ` | ${pill}` : ''), ''];
+  lines.push(`${d ? 'On ' + d + ', ' : ''}JCI Cebu${partners ? ', together with ' + partners + ',' : ''} successfully implemented ${name}${place ? ' at ' + place : ''}.`);
+  const close = [state.band, state.bandHi].map(s => (s || '').trim()).filter(Boolean).join(' ');
+  if (close) lines.push('', close + (partners ? ` Thank you, ${partners}.` : ''));
+  lines.push('', 'SALAMAT. Gratitude in Motion. 💙');
+  const tags = ['#JCICebu', state.hashtag ? '#' + state.hashtag.replace(/^#/, '').replace(/\s+/g, '') : '', '#SALAMAT79', '#GratitudeInMotion', '#ChampionGenuineImpact'];
+  lines.push('', [...new Set(tags.filter(Boolean))].join(' '));
+  return lines.join('\n');
+}
 function draw1(t, x, y, col) { ctx.fillStyle = col; txt(t, x, y); return true; }
 
 function render() {
   const T = THEMES[state.theme] || THEMES.sky, recOn = !!state.recOn;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingQuality = 'high'; ctx.clearRect(0, 0, W, H); ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  if (state.mode === 'photos') { renderPhoto(sel); if (!captionEdited) $('#cap').value = caption(); return; }
   if (state.mode === 'recap' || state.mode === 'bodm') {
     state.mode === 'recap' ? renderRecap(T) : renderBodm(T);
     if (!captionEdited) $('#cap').value = caption(); return;
@@ -634,6 +707,7 @@ function bodmCaption() {
 }
 function caption() {
   if (state.mode === 'recap') return recapCaption();
+  if (state.mode === 'photos') return photosCaption();
   if (state.mode === 'bodm') return bodmCaption();
   const title = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).join(' ');
   const chip = (state.chip || '').trim();
@@ -679,7 +753,7 @@ let projStash = null; // the project form, kept while the secretary is on the BO
 function applyMode() {
   document.querySelectorAll('[data-only]').forEach(el => { el.hidden = !el.dataset.only.split(' ').includes(state.mode); });
   document.querySelectorAll('input[name=mode]').forEach(r => { r.checked = r.value === state.mode; });
-  const u = new URL(location.href); u.searchParams.set('type', { announce: 'announce', recap: 'done', bodm: 'bodm' }[state.mode]);
+  const u = new URL(location.href); u.searchParams.set('type', { announce: 'announce', photos: 'done', recap: 'recap', bodm: 'bodm' }[state.mode]);
   history.replaceState(null, '', u);
 }
 function setMode(m) {
@@ -691,11 +765,11 @@ function setMode(m) {
       const from = MODE_DEFAULTS[state.mode], to = MODE_DEFAULTS[m];
       for (const k of Object.keys(to)) if (!(state[k] || '').trim() || state[k] === from[k]) state[k] = to[k];
       // an invitation closing line ("See you in Tabunok!") never fits a post-op
-      if (m === 'recap' && /^see you/i.test(state.band || '')) { state.band = to.band; state.bandHi = to.bandHi; }
+      if ((m === 'recap' || m === 'photos') && /^see you/i.test(state.band || '')) { state.band = to.band; state.bandHi = to.bandHi; }
       state.mode = m;
     }
   }
-  captionEdited = false; fillForm(); applyMode(); drawRoster(); schedule();
+  captionEdited = false; fillForm(); applyMode(); drawRoster(); drawSetList(); schedule();
 }
 document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', () => setMode(r.value)));
 
@@ -706,6 +780,16 @@ for (const [key, t] of Object.entries(THEMES)) {
   themesBox.append(l);
 }
 
+$('#setIn').addEventListener('change', async e => {
+  const files = [...e.target.files]; if (!files.length) return;
+  toast(`Adding ${files.length} photo${files.length > 1 ? 's' : ''}…`);
+  for (const f of files) { if (images.set.length >= 20) { toast('Up to 20 photos per set'); break; } const img = shrink(await fileImg(f), 2200); images.set.push({ img, thumb: thumbOf(img), fy: 40, z: 100 }); }
+  e.target.value = ''; sel = Math.min(sel, images.set.length - 1); if (sel < 0) sel = 0; drawSetList(); syncSetSliders(); schedule();
+});
+$('#setFy').addEventListener('input', e => { const p = images.set[sel]; if (p) { p.fy = Number(e.target.value); schedule(); } });
+$('#setZ').addEventListener('input', e => { const p = images.set[sel]; if (p) { p.z = Number(e.target.value); schedule(); } });
+$('#prevP').onclick = () => { if (images.set.length) selectPhoto((sel - 1 + images.set.length) % images.set.length); };
+$('#nextP').onclick = () => { if (images.set.length) selectPhoto((sel + 1) % images.set.length); };
 $('#heroIn').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { images.hero = shrink(await fileImg(f), 2200); state.hz = 100; state.hx = 50; state.hy = 40; fillForm(); schedule(); } });
 $('#recIn').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { images.rec = await fileImg(f); state.recOn = true; fillForm(); schedule(); } });
 $('#logoIn').addEventListener('change', async e => {
@@ -797,6 +881,12 @@ async function loadExample() {
     state = { ...loadMeeting(), mNo: '1st', date: '', t1: '18:30', venue: 'JCI Annex Bldg.', area: 'Pelaez St., Kamagayan, Cebu City' };
     saveMeeting(); fillForm(); applyMode(); drawRoster(); render(); return;
   }
+  if (state.mode === 'photos') {
+    state = { ...RECAP_EXAMPLE, mode: 'photos', pname: 'Impact Immersion', pill: 'Community Development', venue: '', area: '' };
+    const ims = await Promise.all(['samples/san-remigio.jpg', 'samples/medical.jpg'].map(loadImg));
+    images.set = ims.map(img => ({ img, thumb: thumbOf(img), fy: 40, z: 100 })); sel = 0;
+    fillForm(); applyMode(); drawSetList(); syncSetSliders(); render(); return;
+  }
   if (state.mode === 'recap') {
     state = { ...RECAP_EXAMPLE };
     images.hero = await loadImg('samples/san-remigio.jpg'); images.logos = [];
@@ -814,17 +904,31 @@ $('#blank').onclick = () => {
     state = { ...loadMeeting(), date: '', mNo: '' }; roster.forEach(r => { r.on = false; }); saveRoster(); saveMeeting();
     fillForm(); applyMode(); drawRoster(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return;
   }
-  state = { ...BLANK, ...MODE_DEFAULTS[m], mode: m }; images.hero = null; images.rec = null; images.logos = [];
-  fillForm(); applyMode(); drawLogoList(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  state = { ...BLANK, ...MODE_DEFAULTS[m], mode: m, pname: '', pill: m === 'photos' ? '' : state.pill }; images.hero = null; images.rec = null; images.logos = [];
+  if (m === 'photos') { images.set = []; sel = 0; }
+  fillForm(); applyMode(); drawLogoList(); drawSetList(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 /* ---------- export ---------- */
 const slug = s => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const fileName = () => state.mode === 'bodm'
+const fileName = (i = sel) => state.mode === 'photos'
+  ? `done-${slug(state.pname || '') || 'jci-cebu'}-${String(i + 1).padStart(2, '0')}.jpg`
+  : state.mode === 'bodm'
   ? `bodm-attendance-${slug([state.mNo, state.date].join(' ')) || 'jci-cebu'}.jpg`
   : (state.mode === 'recap' ? 'done-' : 'pubmat-') + (slug([state.h1, state.h2].join(' ')) || 'jci-cebu') + '.jpg';
 const blob = (type = 'image/jpeg') => new Promise(res => cv.toBlob(res, type, .93));
+const saveBlob = (b, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+async function setFiles() {
+  const out = [], keep = sel;
+  for (let i = 0; i < images.set.length; i++) { sel = i; render(); out.push(new File([await blob()], fileName(i), { type: 'image/jpeg' })); }
+  sel = keep; render(); return out;
+}
 $('#dl').onclick = async () => {
+  if (state.mode === 'photos' && images.set.length > 1) {
+    const files = await setFiles();
+    for (const f of files) { saveBlob(f, f.name); await new Promise(r => setTimeout(r, 450)); }
+    toast(`Downloaded ${files.length} photos`); return;
+  }
   render(); const b = await blob(), a = document.createElement('a');
   a.href = URL.createObjectURL(b); a.download = fileName(); document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast('Downloaded');
@@ -832,8 +936,10 @@ $('#dl').onclick = async () => {
 if (navigator.canShare) {
   const s = $('#share'); s.hidden = false;
   s.onclick = async () => {
-    render(); const f = new File([await blob()], fileName(), { type: 'image/jpeg' });
-    if (navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f], text: $('#cap').value }); } catch {} }
+    let files;
+    if (state.mode === 'photos' && images.set.length > 1) files = await setFiles();
+    else { render(); files = [new File([await blob()], fileName(), { type: 'image/jpeg' })]; }
+    if (navigator.canShare({ files })) { try { await navigator.share({ files, text: $('#cap').value }); } catch {} }
     else toast('Sharing files is not supported here. Use Download.');
   };
 }
@@ -855,14 +961,15 @@ let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classLis
 /* ---------- start ---------- */
 (async () => {
   try { await Promise.all([500, 600, 700, 800, 400].map(w => document.fonts.load(`${w} 40px "Plus Jakarta Sans"`))); } catch {}
-  [assets.stripNavy, assets.stripWhite, assets.footer] = await Promise.all(
-    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=a02aac5d'].map(s => loadImg(s).catch(() => null)));
+  [assets.stripNavy, assets.stripWhite, assets.footer, assets.frameTop, assets.frameBot] = await Promise.all(
+    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=a02aac5d', 'assets/frame-top-white.png', 'assets/frame-bottom-white.png'].map(s => loadImg(s).catch(() => null)));
   await Promise.all(roster.map(loadFace));
   drawRoster();
-  // ?type=done opens on "Project done", ?type=bodm on the BOD meeting attendance
+  // ?type=done opens on "Project done" (the photo set), ?type=recap on the single recap card, ?type=bodm on the BOD meeting attendance
   const t = (location.search.match(/[?&]type=(\w+)/) || [])[1];
   if (t === 'bodm') { projStash = { state: { ...EXAMPLE }, hero: null }; state = loadMeeting(); fillForm(); applyMode(); drawRoster(); render(); return; }
-  if (t === 'done' || t === 'recap') state.mode = 'recap';
+  if (t === 'done') state.mode = 'photos';
+  if (t === 'recap') state.mode = 'recap';
   fillForm(); applyMode();
   await loadExample();
 })();
