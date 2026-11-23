@@ -53,7 +53,7 @@ const MODE_DEFAULTS = {
 // Confirmed 2027 partners (same roster as the footer), so nobody has to hunt for a logo file.
 const PARTNER_LOGOS = [
   ['aznar.png', 'Aznar Shipping'], ['levelup.jpg', 'Level Up Talent Solutions'], ['travelbee.png', 'Travelbee'], ['bighotel.png', 'BIG Hotel'],
-  ['pillows.jpg', 'Pillows Hotel'], ['mangtinapay.jpg', 'Mang Tinapay'], ['darmas.png', "Darma's Giftdash"], ['cebuexpress.png', 'Cebu Air Mail Express'],
+  ['pillows.jpg', 'Pillows Hotel'], ['mangtinapay.jpg', 'Mang Tinapay'], ['darmas.png', "Darma's Giftdash"], ['cebuexpress.png', 'Cebu Express'],
   ['morningmart.jpg', 'Morning Mart Philippines'], ['java.jpg', 'Java Photography & Film'], ['vans.jpg', 'Vanstravel Tourism'], ['openmic.jpg', 'Open Mic Acoustic Lounge'],
   ['vensu.jpg', 'Vensu PH'], ['jcijapan.png', 'JCI Japan'], ['ganaeat.png', 'Gana Eat'], ['sdh.png', 'Static Data Hosting'],
   ['sante.jpg', 'Santé Barley'], ['ara.jpg', 'ARA Digital Printing Services'], ['legalize.png', 'LegalizePH'], ['neri.jpg', 'Neri Audio'],
@@ -962,7 +962,7 @@ let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classLis
 (async () => {
   try { await Promise.all([500, 600, 700, 800, 400].map(w => document.fonts.load(`${w} 40px "Plus Jakarta Sans"`))); } catch {}
   [assets.stripNavy, assets.stripWhite, assets.footer, assets.frameTop, assets.frameBot] = await Promise.all(
-    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=231bded1', 'assets/frame-top-white.png', 'assets/frame-bottom-white.png'].map(s => loadImg(s).catch(() => null)));
+    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=491431a1', 'assets/frame-top-white.png', 'assets/frame-bottom-white.png'].map(s => loadImg(s).catch(() => null)));
   await Promise.all(roster.map(loadFace));
   drawRoster();
   // ?type=done opens on "Project done" (the photo set), ?type=recap on the single recap card, ?type=bodm on the BOD meeting attendance
