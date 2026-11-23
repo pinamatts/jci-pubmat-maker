@@ -80,6 +80,33 @@
  },
  {
   "group": "79th Induction and Turnover",
+  "title": "79 in JCI Blue (matches the 2027 line-up)",
+  "file": "79-JCI-blue.png",
+  "thumb": "thumb-79-JCI-blue.png",
+  "on": "light",
+  "w": 1740,
+  "h": 1426
+ },
+ {
+  "group": "79th Induction and Turnover",
+  "title": "79 in blue and teal",
+  "file": "79-blue-teal.png",
+  "thumb": "thumb-79-blue-teal.png",
+  "on": "light",
+  "w": 1740,
+  "h": 1426
+ },
+ {
+  "group": "79th Induction and Turnover",
+  "title": "79 in silver (for dark backgrounds)",
+  "file": "79-silver.png",
+  "thumb": "thumb-79-silver.png",
+  "on": "dark",
+  "w": 1740,
+  "h": 1426
+ },
+ {
+  "group": "79th Induction and Turnover",
   "title": "79th Induction key visual (poster)",
   "file": "79th-Induction-key-visual.jpg",
   "thumb": "thumb-79th-Induction-key-visual.jpg",
