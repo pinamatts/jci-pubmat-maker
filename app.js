@@ -57,7 +57,7 @@ const PARTNER_LOGOS = [
   ['morningmart.jpg', 'Morning Mart Philippines'], ['java.jpg', 'Java Photography & Film'], ['vans.jpg', 'Vanstravel Tourism'], ['openmic.jpg', 'Open Mic Acoustic Lounge'],
   ['vensu.jpg', 'Vensu PH'], ['jcijapan.png', 'JCI Japan'], ['ganaeat.png', 'Gana Eat'], ['sdh.png', 'Static Data Hosting'],
   ['sante.jpg', 'Santé Barley'], ['ara.jpg', 'ARA Digital Printing Services'], ['legalize.png', 'LegalizePH'], ['neri.jpg', 'Neri Audio'],
-  ['sandoni.png', 'Sandoni'], ['djryss.png', 'DJ Ryss'], ['dgx.png', 'DGX Embroidery King'], ['jsu.png', 'JSU Financial Advisory Service'],
+  ['sandoni.png', 'Sandoni'], ['djryss.png', 'DJ Ryss'], ['dgx.png', 'DGX Embroidery King'], ['jsu.png', 'JSU Financial Advisory Service'], ['5ft.png', '5ft Cebu'],
 ];
 let state = { ...EXAMPLE };
 const images = { hero: null, rec: null, logos: [], photos: [], set: [] }; // set: the project-done photo set [{img, fy, z}]
@@ -962,7 +962,7 @@ let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classLis
 (async () => {
   try { await Promise.all([500, 600, 700, 800, 400].map(w => document.fonts.load(`${w} 40px "Plus Jakarta Sans"`))); } catch {}
   [assets.stripNavy, assets.stripWhite, assets.footer, assets.frameTop, assets.frameBot] = await Promise.all(
-    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=0e588efa', 'assets/frame-top-white.png', 'assets/frame-bottom-white.png'].map(s => loadImg(s).catch(() => null)));
+    ['assets/logo-lineup-2027-navy.png', 'assets/logo-lineup-2027-white.png', 'assets/partner-footer.png?v=71be54ae', 'assets/frame-top-white.png', 'assets/frame-bottom-white.png'].map(s => loadImg(s).catch(() => null)));
   await Promise.all(roster.map(loadFace));
   drawRoster();
   // ?type=done opens on "Project done" (the photo set), ?type=recap on the single recap card, ?type=bodm on the BOD meeting attendance
