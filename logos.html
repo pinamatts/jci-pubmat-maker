@@ -65,7 +65,7 @@ footer{padding:32px 0 40px;color:var(--mute);font-size:13px}
 </div>
 <script>
 (async () => {
-  const items = await fetch('logos/logos.json?v=1').then(r => r.json());
+  const items = await fetch('logos/logos.json?v=2').then(r => r.json());
   const list = document.getElementById('list'), groups = new Map();
   for (const it of items) { if (!groups.has(it.group)) groups.set(it.group, []); groups.get(it.group).push(it); }
   for (const [g, arr] of groups) {
