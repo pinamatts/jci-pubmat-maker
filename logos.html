@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d1530">
+<title>JCI Cebu Logos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1530;--panel:#141f42;--panel2:#1a2852;--line:#2a3a6b;--ink:#eef3fb;--mute:#9fb0cf;--blue:#0097D7;--teal:#57BCBC;--yellow:#EFC40F}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 'Plus Jakarta Sans',system-ui,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+header{padding:20px 0 8px}
+header a.back{color:var(--teal);font-weight:700;text-decoration:none;font-size:14px}
+h1{margin:8px 0 0;font-size:26px;letter-spacing:-.02em}
+header p{margin:6px 0 0;color:var(--mute);max-width:70ch}
+.btn{font:inherit;font-weight:700;border-radius:12px;padding:10px 14px;cursor:pointer;background:var(--panel2);color:var(--ink);border:1px solid var(--line);display:inline-flex;align-items:center;gap:8px;min-height:44px;text-decoration:none;font-size:14px}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.top{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 4px}
+h2{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--teal);margin:32px 0 12px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.sw{height:190px;display:flex;align-items:center;justify-content:center;padding:18px}
+.sw.light{background:#fff}
+.sw.dark{background:#0b1a3a}
+.sw.photo{background:#0b1a3a;padding:0}
+.sw img{max-width:100%;max-height:100%;object-fit:contain}
+.sw.photo img{width:100%;height:100%;object-fit:contain}
+.meta{padding:12px 14px 14px;display:grid;gap:10px;flex:1}
+.meta b{font-size:15px;line-height:1.3}
+.meta small{color:var(--mute);font-size:13px}
+.dl{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.rules{background:#102449;border:1px solid #23427d;border-radius:12px;padding:12px 14px;color:#cfe0f7;font-size:14px;margin:18px 0 0}
+.rules ul{margin:6px 0 0;padding-left:18px}
+footer{padding:32px 0 40px;color:var(--mute);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="back" href="./">← Pubmat Maker</a>
+  <h1>JCI Cebu logos, 2027</h1>
+  <p>The official files for slides, pubmats and print. Tap a logo to download it. PNGs have clear backgrounds. SVG is the vector version, sharp at any size; use it for slides and print when it's there.</p>
+  <div class="top">
+    <a class="btn primary" href="logos/JCI-Cebu-2027-logos.zip" download>⬇ Download all (.zip)</a>
+  </div>
+  <div class="rules"><b>Before you use them</b>
+    <ul>
+      <li>Use white logos on dark or photo backgrounds, and the colour or black ones on light backgrounds.</li>
+      <li>Don't stretch, recolour or redraw a logo. Leave space around it.</li>
+      <li>On pubmats, logos sit top left. The 2027 line-up order is JCI Philippines · JCI Cebu · Champion Genuine Impact | El Vinta · SALAMAT.</li>
+      <li>The old blue flame “79” logo and the 2026 DARE logos are retired. Don't use them on anything new.</li>
+    </ul>
+  </div>
+</header>
+<main id="list" aria-live="polite"></main>
+<footer>JCI Cebu · 79th year · SALAMAT: Gratitude in Motion</footer>
+</div>
+<script>
+(async () => {
+  const items = await fetch('logos/logos.json?v=1').then(r => r.json());
+  const list = document.getElementById('list'), groups = new Map();
+  for (const it of items) { if (!groups.has(it.group)) groups.set(it.group, []); groups.get(it.group).push(it); }
+  for (const [g, arr] of groups) {
+    const h = document.createElement('h2'); h.textContent = g; list.append(h);
+    const grid = document.createElement('div'); grid.className = 'grid'; list.append(grid);
+    for (const it of arr) {
+      const card = document.createElement('article'); card.className = 'card';
+      const sw = document.createElement('a'); sw.className = 'sw ' + it.on; sw.href = 'logos/' + it.file; sw.download = it.file; sw.setAttribute('aria-label', 'Download ' + it.title);
+      const img = document.createElement('img'); img.src = 'logos/' + it.thumb; img.alt = it.title; img.loading = 'lazy'; sw.append(img);
+      const meta = document.createElement('div'); meta.className = 'meta';
+      const b = document.createElement('b'); b.textContent = it.title;
+      const s = document.createElement('small'); s.textContent = `${it.w} × ${it.h} px`;
+      const dl = document.createElement('div'); dl.className = 'dl';
+      const ext = it.file.split('.').pop().toUpperCase();
+      const a = document.createElement('a'); a.className = 'btn primary'; a.href = 'logos/' + it.file; a.download = it.file; a.textContent = '⬇ ' + ext; dl.append(a);
+      if (it.svg) { const v = document.createElement('a'); v.className = 'btn'; v.href = 'logos/' + it.svg; v.download = it.svg; v.textContent = '⬇ SVG'; dl.append(v); }
+      meta.append(b, s, dl); card.append(sw, meta); grid.append(card);
+    }
+  }
+})();
+</script>
+</body>
+</html>
