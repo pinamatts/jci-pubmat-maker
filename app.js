@@ -27,7 +27,7 @@ const EXAMPLE = {
   chip: 'Impact Immersion', kicker: 'JCI Cebu community project', h1: 'Medical', h2: 'Mission', theme: 'sky',
   date: '2026-11-22', t1: '07:30', t2: '12:30', venue: 'Tabunok Central Elementary School', area: 'Tabunok, Talisay City', meet: '', outfit: 'White Community Shirt',
   partners: 'My Mountain Mover and its Greater Heights Foundation', pLabel: 'In partnership with',
-  hz: 100, hx: 50, hy: 35, tag: 'Gratitude in motion', lead: '', pts: '',
+  hz: 100, hx: 50, hy: 35, tag: 'Gratitude in motion', lead: '', pts: '', layout: 'split',
   recOn: true, ry: 30, rLabel: 'On the record', rTitle: 'From San Remigio\nto Tabunok.', rBody: 'Our Impact Immersion went north in May 2025. This Sunday, it comes to Talisay City.',
   band: 'See you in', bandHi: 'Tabunok!', hashtag: 'ImpactImmersion',
 };
@@ -36,7 +36,7 @@ const BLANK = {
   chip: 'Community project', kicker: 'JCI Cebu', h1: 'Project', h2: 'Title', theme: 'sky',
   date: '', t1: '', t2: '', venue: '', area: '', meet: '', outfit: '', partners: '', pLabel: 'In partnership with',
   hz: 100, hx: 50, hy: 40, tag: 'Gratitude in motion', recOn: false, ry: 40, rLabel: 'On the record', rTitle: '', rBody: '',
-  band: 'See you', bandHi: 'there!', hashtag: 'JCICebu', pname: '', pill: '', lead: '', pts: '',
+  band: 'See you', bandHi: 'there!', hashtag: 'JCICebu', pname: '', pill: '', lead: '', pts: '', layout: 'split',
 };
 
 // Post-op example: the San Remigio Impact Immersion group photo (May 2025). No numbers: only real counts go on.
@@ -610,6 +610,134 @@ function photosCaption() {
 }
 function draw1(t, x, y, col) { ctx.fillStyle = col; txt(t, x, y); return true; }
 
+
+/* ---------- second announcement layout: big photo on top, title across the full width ---------- */
+const hex3 = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mixHex = (a, b, t) => { const A = hex3(a), B = hex3(b); return A.map((v, i) => Math.round(v + (B[i] - v) * t)); };
+function posterInfo(T, x, y, w, draw) { // the white card: date, time, place, outfit
+  const d = fmtDate(state.date), t = fmtTime(state.t1, state.t2), v = (state.venue || '').trim(), a = (state.area || '').trim(), m = (state.meet || '').trim(), o = (state.outfit || '').trim();
+  if (!(d || t || v || a || m || o)) return 0;
+  const pad = 26, tx = x + pad + 10, iw = w - pad * 2 - 10, rows = [];
+  if (d) { F(800, 30); wrap(d, iw, -.3).forEach(l => rows.push(['d', l, 38])); }
+  if (t) rows.push(['t', t, 34]);
+  if (v) { rows.push(['gap', '', 8]); F(700, 21); wrap(v, iw).forEach(l => rows.push(['v', l, 28])); }
+  if (a) { if (!v) rows.push(['gap', '', 8]); F(500, 20); wrap(a, iw).forEach(l => rows.push(['a', l, 27])); }
+  if (m) { rows.push(['gap', '', 12], ['lab', 'MEETING PLACE', 22]); F(600, 20); wrap(m, iw).forEach(l => rows.push(['m', l, 27])); }
+  if (o) { rows.push(['gap', '', 12], ['lab', 'OUTFIT', 22]); F(700, 21); wrap(o, iw).forEach(l => rows.push(['o', l, 28])); }
+  const h = pad * 2 - 6 + rows.reduce((s, r) => s + r[2], 0);
+  if (draw) {
+    const acc = /^#0a/.test(T.col[2]) ? '#0a86c4' : '#1F4789';
+    ctx.save(); ctx.shadowColor = 'rgba(10,30,70,.30)'; ctx.shadowBlur = 50; ctx.shadowOffsetY = 22; ctx.fillStyle = '#fff'; rr(x, y, w, h, 22); ctx.fill(); ctx.restore();
+    ctx.save(); rr(x, y, w, h, 22); ctx.clip(); ctx.fillStyle = T.col[1]; ctx.fillRect(x, y, 10, h); ctx.restore();
+    let cy = y + pad - 4;
+    for (const [k, s, lh] of rows) {
+      if (k === 'd') { F(800, 30); ctx.fillStyle = '#130F2D'; txt(s, tx, cy + 29, -.3); }
+      else if (k === 't') { F(700, 24); ctx.fillStyle = acc; txt(s, tx, cy + 24); }
+      else if (k === 'v') { F(700, 21); ctx.fillStyle = '#130F2D'; txt(s, tx, cy + 21); }
+      else if (k === 'a') { F(500, 20); ctx.fillStyle = '#4b5a75'; txt(s, tx, cy + 20); }
+      else if (k === 'lab') { F(800, 13); ctx.fillStyle = acc; txt(s, tx, cy + 13, 2.6); }
+      else if (k === 'm') { F(600, 20); ctx.fillStyle = '#130F2D'; txt(s, tx, cy + 20); }
+      else if (k === 'o') { F(700, 21); ctx.fillStyle = '#130F2D'; txt(s, tx, cy + 21); }
+      cy += lh;
+    }
+  }
+  return h;
+}
+function posterLeft(T, x, y, w, g, draw) { // invitation, points, partner logos
+  const y0 = y, lead = (state.lead || '').trim();
+  if (lead) { F(500, 25); for (const l of wrap(lead, w).slice(0, 4)) { if (draw) { ctx.fillStyle = T.muted; txt(l, x, y + 24); } y += 34; } y += 10 * g; }
+  const pts = String(state.pts || '').split('\n').map(s => s.trim()).filter(Boolean).slice(0, 4);
+  for (const p of pts) {
+    F(700, 23); const ls = wrap(p, w - 40).slice(0, 2);
+    if (draw) {
+      ctx.fillStyle = T.accent; ctx.beginPath(); ctx.arc(x + 13, y + 15, 13, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(x + 7, y + 15.5); ctx.lineTo(x + 11.5, y + 20); ctx.lineTo(x + 19.5, y + 10.5); ctx.stroke();
+    }
+    ls.forEach(l => { if (draw) { ctx.fillStyle = T.ink; txt(l, x + 38, y + 23); } y += 31; });
+    y += 7 * g;
+  }
+  const hadText = y > y0;
+  const yp = drawPartners(T, x, hadText ? y : y - 22 * Math.min(g, 1), g, draw, Math.min(w, 540));
+  return Math.max(y, yp) - y0;
+}
+function posterBlock(T, fs, g, top, draw) {
+  const x = 64; let y = top;
+  const chip = (state.chip || '').toUpperCase().trim();
+  if (chip) {
+    F(800, 17); const w = tw(chip, 3) + 36 + 19;
+    if (draw) {
+      ctx.fillStyle = T.chipBg; rr(x, y, w, 42, 21); ctx.fill();
+      ctx.fillStyle = T.chipDot; ctx.beginPath(); ctx.arc(x + 22.5, y + 21, 4.5, 0, 7); ctx.fill();
+      ctx.fillStyle = T.chipInk; txt(chip, x + 37, y + 27.5, 3);
+    }
+    y += 42 + 22 * g;
+  }
+  const k = (state.kicker || '').toUpperCase().trim();
+  if (k) { F(700, 18); if (draw) { ctx.fillStyle = T.muted; txt(k, x, y + 15, 2.9); } y += 18 + 12 * g; }
+  const L = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean);
+  F(800, fs);
+  L.forEach((l, i) => { if (draw) { ctx.fillStyle = i === 1 ? T.accent : T.ink; txt(l, x, y + fs * .8, -.035 * fs); } y += fs * .94; });
+  y += 20 * g;
+  const cw = 372, hasInfo = posterInfo(T, 0, 0, cw, false) > 0, lw = hasInfo ? 520 : 952;
+  if (draw && hasInfo) { // the colour slab the card stands on
+    const cg = ctx.createLinearGradient(0, y, 0, CONTENT_BOTTOM); T.col.forEach((c, i) => cg.addColorStop(i / (T.col.length - 1), c));
+    ctx.save(); rr(W - 250, y - 26, 300, CONTENT_BOTTOM - y + 80, 44); ctx.clip();
+    ctx.fillStyle = cg; ctx.fillRect(W - 250, y - 26, 250, CONTENT_BOTTOM - y + 26);
+    ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 3;
+    for (const r of [90, 160, 230, 300]) { ctx.beginPath(); ctx.arc(W + 40, CONTENT_BOTTOM + 40, r, 0, 7); ctx.stroke(); }
+    ctx.restore();
+  }
+  const lh = posterLeft(T, x, y, lw, g, draw);
+  const ch = hasInfo ? posterInfo(T, W - 64 - cw, y + 6, cw, draw) + 6 : 0;
+  return y + Math.max(lh, ch) - top;
+}
+function renderPoster(T) {
+  const BOT = 1036, MINTOP = 350;
+  F(800, 100);
+  const widest = Math.max(1, ...[state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean).map(l => tw(l, -3.5)));
+  let fs = Math.min(128, Math.floor(100 * 940 / widest)), g = 1;
+  while (BOT - posterBlock(T, fs, g, 0, false) < MINTOP && fs > 60) fs -= 4;
+  while (BOT - posterBlock(T, fs, g, 0, false) < MINTOP && g > .3) g -= .1;
+  while (g < 2.2 && BOT - posterBlock(T, fs, g + .1, 0, false) >= 640) g += .1;
+  const top = Math.max(230, Math.min(690, BOT - posterBlock(T, fs, g, 0, false))), PH = top + 44;
+
+  // page colour, then the photo across the top
+  if (T.bg2) { const bgG = ctx.createLinearGradient(0, 0, 0, CONTENT_BOTTOM); bgG.addColorStop(0, T.bg); bgG.addColorStop(1, T.bg2); ctx.fillStyle = bgG; }
+  else ctx.fillStyle = T.bg;
+  ctx.fillRect(0, 0, W, CONTENT_BOTTOM);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, PH); ctx.clip();
+  if (images.hero) cover(images.hero, 0, 0, W, PH, state.hx / 100, state.hy / 100, state.hz / 100);
+  else placeholder(0, 0, W, PH, 'Add your photo');
+  ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 3;
+  for (const r of [150, 240, 330, 420, 510]) { ctx.beginPath(); ctx.arc(W + 70, -70, r, 0, 7); ctx.stroke(); }
+  ctx.restore();
+  // a dark veil under the logos, and the photo fading into the page colour
+  const veil = ctx.createLinearGradient(0, 0, 0, 220); veil.addColorStop(0, 'rgba(19,15,45,.72)'); veil.addColorStop(1, 'rgba(19,15,45,0)');
+  ctx.fillStyle = veil; ctx.fillRect(0, 0, W, 220);
+  const c = T.bg2 ? mixHex(T.bg, T.bg2, PH / CONTENT_BOTTOM) : hex3(T.bg), fade = ctx.createLinearGradient(0, PH - 210, 0, PH);
+  fade.addColorStop(0, `rgba(${c},0)`); fade.addColorStop(.6, `rgba(${c},.72)`); fade.addColorStop(1, `rgba(${c},1)`);
+  ctx.fillStyle = fade; ctx.fillRect(0, PH - 210, W, 211);
+
+  if (assets.stripWhite) ctx.drawImage(assets.stripWhite, 64, 56, assets.stripWhite.width * 48 / assets.stripWhite.height, 48);
+  const tag = (state.tag || '').toUpperCase().trim();
+  if (tag) { F(800, 17); drawTag(T, W - 64 - (tw(tag, 2.4) + 32), 62); }
+
+  // the second photo, as a small tilted print over the big one
+  if (state.recOn && images.rec && top >= 330) {
+    const iw = 300, ih = 214, lab = (state.rLabel || '').toUpperCase().trim(), capH = lab ? 40 : 0;
+    ctx.save(); ctx.translate(W - 64 - iw / 2 - 8, top - 60); ctx.rotate(3 * Math.PI / 180);
+    ctx.shadowColor = 'rgba(10,30,70,.40)'; ctx.shadowBlur = 44; ctx.shadowOffsetY = 20;
+    ctx.fillStyle = '#fff'; rr(-iw / 2 - 9, -ih / 2 - 9, iw + 18, ih + 18 + capH, 8); ctx.fill(); ctx.shadowColor = 'transparent';
+    ctx.save(); ctx.beginPath(); ctx.rect(-iw / 2, -ih / 2, iw, ih); ctx.clip(); cover(images.rec, -iw / 2, -ih / 2, iw, ih, .5, state.ry / 100); ctx.restore();
+    if (lab) { F(800, 14); ctx.fillStyle = '#1F4789'; txt(lab, -iw / 2 + 4, ih / 2 + 27, 2.6); }
+    ctx.restore();
+  }
+
+  posterBlock(T, fs, g, top, true);
+  drawBandAndFooter(T);
+}
+
 const mini = $('#mini'), big = $('#big'), peek = $('#peek');
 function syncMini() {
   if (mini) { const m = mini.getContext('2d'); m.imageSmoothingQuality = 'high'; m.clearRect(0, 0, mini.width, mini.height); m.drawImage(cv, 0, 0, mini.width, mini.height); }
@@ -624,6 +752,7 @@ function renderCore() {
     state.mode === 'recap' ? renderRecap(T) : renderBodm(T);
     if (!captionEdited) $('#cap').value = caption(); return;
   }
+  if (state.layout === 'poster') { renderPoster(T); if (!captionEdited) $('#cap').value = caption(); return; }
 
   // background, dots and the colour column
   if (T.bg2) { const g = ctx.createLinearGradient(0, 0, 0, CONTENT_BOTTOM); g.addColorStop(0, T.bg); g.addColorStop(1, T.bg2); ctx.fillStyle = g; }
@@ -776,13 +905,16 @@ function fillForm() {
     else if (el.type === 'radio') el.checked = el.value === state[el.name];
     else el.value = state[el.name];
   }
+  syncNotes();
 }
+function syncNotes() { const n = $('#recNote'); if (n) n.hidden = state.layout !== 'poster'; }
 let raf = 0;
 const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
 form.addEventListener('input', e => {
   const el = e.target; if (!el.name || el.name === 'mode' || !(el.name in state)) return;
   state[el.name] = el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value;
   if (state.mode === 'bodm') saveMeeting();
+  if (el.name === 'layout') syncNotes();
   schedule();
 });
 $('#cap').addEventListener('input', () => { captionEdited = true; });
@@ -943,7 +1075,7 @@ $('#blank').onclick = () => {
     state = { ...loadMeeting(), date: '', mNo: '' }; roster.forEach(r => { r.on = false; }); saveRoster(); saveMeeting();
     fillForm(); applyMode(); drawRoster(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return;
   }
-  state = { ...BLANK, ...MODE_DEFAULTS[m], mode: m, pname: '', pill: m === 'photos' ? '' : state.pill }; images.hero = null; images.rec = null; images.logos = [];
+  state = { ...BLANK, ...MODE_DEFAULTS[m], mode: m, pname: '', pill: m === 'photos' ? '' : state.pill, layout: state.layout || 'split' }; images.hero = null; images.rec = null; images.logos = [];
   if (m === 'photos') { images.set = []; sel = 0; }
   fillForm(); applyMode(); drawLogoList(); drawSetList(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -1029,4 +1161,6 @@ let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classLis
   if (t === 'recap') state.mode = 'recap';
   fillForm(); applyMode();
   await loadExample();
+  // ?layout=poster opens the announcement on the big-photo layout
+  if (/[?&]layout=poster\b/.test(location.search) && state.mode === 'announce') { state.layout = 'poster'; fillForm(); render(); }
 })();

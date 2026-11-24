@@ -194,6 +194,14 @@ dialog#peek .actions{justify-content:center}
       <label>Project name <small>for the caption</small><input type="text" name="pname" maxlength="60"></label>
     </fieldset>
 
+    <fieldset data-only="announce">
+      <legend>Layout</legend>
+      <div class="modes" role="radiogroup">
+        <label><input type="radio" name="layout" value="split"><span><b>Photo on the side</b><small>title on the left, tilted photo on the right</small></span></label>
+        <label><input type="radio" name="layout" value="poster"><span><b>Big photo on top</b><small>the photo across the top, the title across the full width</small></span></label>
+      </div>
+    </fieldset>
+
     <fieldset data-only="announce recap bodm">
       <legend>Colour</legend>
       <div class="themes" id="themes"></div>
@@ -266,7 +274,8 @@ dialog#peek .actions{justify-content:center}
 
     <fieldset data-only="announce">
       <legend>Second photo panel</legend>
-      <label class="switch"><input type="checkbox" name="recOn" switch> Show the panel at the bottom</label>
+      <label class="switch"><input type="checkbox" name="recOn" switch> Show the second photo</label>
+      <p class="note" id="recNote" style="margin:0" hidden>In the Big photo layout, the second photo sits as a small tilted photo with its small label. The heading and text are not shown.</p>
       <div class="file"><label>Photo<input type="file" id="recIn" accept="image/*"></label></div>
       <label>Up / down<input type="range" name="ry" min="0" max="100"></label>
       <label>Small label<input type="text" name="rLabel" maxlength="26"></label>
@@ -303,6 +312,6 @@ dialog#peek .actions{justify-content:center}
   <div class="actions"><button type="button" class="primary" id="peekDl">⬇ Download</button><button type="button" id="peekClose">Back to the form</button></div>
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=6b05a8d8"></script>
+<script src="app.js?v=6b05aa75"></script>
 </body>
 </html>
