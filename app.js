@@ -521,10 +521,10 @@ function renderPhoto(i) {
   else placeholder(0, 0, W, PH, 'Add your project photos');
   // JCI-blue glow down the left edge, a soft top for the logos, a soft bottom for the pill
   let g = ctx.createLinearGradient(0, 0, 360, 0);
-  g.addColorStop(0, 'rgba(0,110,230,.88)'); g.addColorStop(.3, 'rgba(0,140,225,.45)'); g.addColorStop(1, 'rgba(0,151,215,0)');
+  g.addColorStop(0, 'rgba(0,110,230,.52)'); g.addColorStop(.3, 'rgba(0,140,225,.26)'); g.addColorStop(1, 'rgba(0,151,215,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, 360, PH);
   g = ctx.createRadialGradient(0, 0, 0, 0, 0, 520);
-  g.addColorStop(0, 'rgba(0,90,200,.55)'); g.addColorStop(1, 'rgba(0,90,200,0)');
+  g.addColorStop(0, 'rgba(0,90,200,.34)'); g.addColorStop(1, 'rgba(0,90,200,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, 620, 520);
   g = ctx.createLinearGradient(0, PH - 260, 0, PH);
   g.addColorStop(0, 'rgba(6,18,46,0)'); g.addColorStop(1, 'rgba(6,18,46,.6)');
