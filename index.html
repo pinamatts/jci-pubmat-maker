@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0d1530">
@@ -86,13 +86,36 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font
 .roster div button:disabled{opacity:.35}
 .count{font-weight:800;color:var(--teal)}
 details{border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
-summary{cursor:pointer;font-weight:700}
+summary{cursor:pointer;font-weight:700;min-height:28px}
+.starts{display:flex;flex-wrap:wrap;gap:8px}
+.starts button{padding:8px 12px;min-height:40px;font-size:14px;border-radius:999px}
+.intro-s{display:none}
+/* phone: a bar that keeps the pubmat and Download in reach while you fill in the form */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:10px;align-items:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(13,21,48,.97);border-top:1px solid var(--line)}
+.dock #dockPeek{padding:4px 12px 4px 4px;gap:10px;font-size:14px}
+.dock canvas{width:44px;height:55px;border-radius:5px;background:#fff;display:block}
+.dock .primary{flex:1;justify-content:center}
+@media (min-width:900px){.dock{display:none}}
+@media (max-width:899px){
+  body.docked{padding-bottom:84px} body.docked .toast{bottom:96px}
+  .intro-l{display:none} .intro-s{display:block}
+  header h1{font-size:22px}
+  .modes{grid-template-columns:1fr 1fr} .modes span{padding:10px} .modes b{font-size:14.5px} .modes small{font-size:12px}
+  .pick{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .pick button{min-height:64px;padding:6px 4px} .pick button span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pick img{height:34px;max-width:100%}
+}
+dialog#peek{border:0;padding:12px;background:#0d1530;border-radius:14px;max-width:100vw;max-height:100dvh}
+dialog#peek::backdrop{background:rgba(0,0,0,.78)}
+dialog#peek canvas{display:block;aspect-ratio:4/5;width:min(calc(100vw - 24px),calc((100dvh - 96px)*.8));height:auto;border-radius:8px;background:#fff}
+dialog#peek .actions{justify-content:center}
 </style>
 </head>
 <body>
 <header>
   <h1>JCI Cebu Pubmat Maker</h1>
-  <p>Make an <strong>announcement</strong> before your project, a <strong>project done</strong> photo set after it (every photo framed the same, posted as one album), a single <strong>recap card</strong>, or the <strong>BOD meeting attendance</strong> for the GC. Fill in the form and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
+  <p class="intro-s">Fill in the form and download a pubmat in our 79th-year style. The logos and partner footer are built in.</p>
+  <p class="intro-l">Make an <strong>announcement</strong> before your project, a <strong>project done</strong> photo set after it (every photo framed the same, posted as one album), a single <strong>recap card</strong>, or the <strong>BOD meeting attendance</strong> for the GC. Fill in the form and download a pubmat in our 79th-year style. The 2027 logo line-up, the partner footer and our 79th-year theme, <strong>SALAMAT: Gratitude in Motion</strong>, are built in.</p>
   <p><a href="logos.html" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-weight:700;text-decoration:none">🎨 Need a logo for slides? Download the official 2027 logos →</a></p>
 </header>
 <main>
@@ -116,6 +139,11 @@ summary{cursor:pointer;font-weight:700}
         <label><input type="radio" name="mode" value="recap"><span><b>🏁 Recap card</b><small>one designed card: the group photo, “successfully implemented”, thank-you logos</small></span></label>
         <label><input type="radio" name="mode" value="bodm"><span><b>🗓️ BOD meeting attendance</b><small>tick who is coming; the pubmat sorts everyone for the GC</small></span></label>
       </div>
+      <p class="note" style="margin:0">The form opens with an example so you can see how it looks. Tap <b>Start blank</b> to clear it and type your own.</p>
+      <div class="actions" style="margin:0">
+        <button type="button" class="primary" id="blank">Start blank</button>
+        <button type="button" id="example">Load the example</button>
+      </div>
     </fieldset>
 
     <fieldset data-only="bodm">
@@ -129,12 +157,22 @@ summary{cursor:pointer;font-weight:700}
 
     <fieldset data-only="announce recap">
       <legend>Project</legend>
+      <div data-only="announce"><div style="font-weight:600;font-size:14px;color:#d5def0;margin-bottom:6px">Quick start <small style="font-weight:500;color:var(--mute)">fills in the labels for you</small></div>
+        <div class="starts" id="starts">
+          <button type="button" data-start="project">Community project</button>
+          <button type="button" data-start="training">Training</button>
+          <button type="button" data-start="oti">Recruitment (OTI)</button>
+          <button type="button" data-start="call">Call for volunteers</button>
+          <button type="button" data-start="fellowship">Fellowship</button>
+        </div></div>
       <label>Project label <small>the dark pill at the top</small><input type="text" name="chip" maxlength="32"></label>
       <label>Small line above the title<input type="text" name="kicker" maxlength="40"></label>
       <div class="row">
         <label>Title, line 1<input type="text" name="h1" maxlength="18"></label>
         <label>Title, line 2 <small>shown in colour</small><input type="text" name="h2" maxlength="18"></label>
       </div>
+      <label data-only="announce">Short invitation <small>one or two sentences under the title; leave empty to hide</small><textarea name="lead" rows="2" style="min-height:70px" maxlength="150"></textarea></label>
+      <label data-only="announce">Points <small>up to 4, one per line, e.g. what a volunteer will do; leave empty to hide</small><textarea name="pts" rows="4" style="min-height:110px" maxlength="240"></textarea></label>
       <label>Sticker on the photo <small>defaults to “Gratitude in Motion”, our 79th-year theme (SALAMAT). Keep it unless the project chair asks otherwise; clear it to hide.</small><input type="text" name="tag" maxlength="22"></label>
     </fieldset>
 
@@ -201,8 +239,8 @@ summary{cursor:pointer;font-weight:700}
       <p class="note" data-only="photos" style="margin:0">The confirmed-partners footer is on every photo. Name the project's own partners here to thank them in the caption.</p>
       <label>Partner names <small data-only="announce recap">for the caption; also shown on the pubmat if you add no logo</small><small data-only="photos">for the caption</small><input type="text" name="partners" maxlength="80"></label>
       <label data-only="announce recap">Line above the logos<input type="text" name="pLabel" maxlength="30"></label>
-      <div data-only="announce recap"><div style="font-weight:600;font-size:14px;color:#d5def0;margin-bottom:6px">Our 2027 partners <small style="font-weight:500;color:var(--mute)">tap to add their logo, tap again to remove</small></div>
-      <div class="pick" id="partnerPick"></div></div>
+      <details data-only="announce recap" id="pickBox"><summary>Add a 2027 partner's logo <small style="font-weight:500;color:var(--mute)">tap a logo to add it, tap again to remove</small></summary>
+      <div class="pick" id="partnerPick" style="margin-top:10px"></div></details>
       <div class="file" data-only="announce recap"><label>Another partner's logo <small>up to 3 logos in all; PNG with a clear background looks best</small><input type="file" id="logoIn" accept="image/*" multiple></label></div>
       <div class="logos" id="logoList" data-only="announce recap"></div>
     </fieldset>
@@ -252,14 +290,19 @@ summary{cursor:pointer;font-weight:700}
       <label><span data-only="announce recap photos">Ready to paste <small>written from the form; you can edit it</small></span><span data-only="bodm">Attendance list for the GC <small>paste it with the pubmat; it updates as you tick</small></span><textarea id="cap"></textarea></label>
     </fieldset>
 
-    <div class="actions">
-      <button type="button" id="example">Load the example</button>
-      <button type="button" id="blank">Start blank</button>
-    </div>
   </form>
 </main>
 <footer>JCI Cebu · 79th year. Check names, dates and partner details with the project chair before posting.</footer>
+<div class="dock" id="dock" hidden>
+  <button type="button" id="dockPeek" aria-label="See the full pubmat"><canvas id="mini" width="216" height="270" aria-hidden="true"></canvas>See pubmat</button>
+  <button type="button" class="primary" id="dockDl">⬇ Download</button>
+  <button type="button" id="dockShare" hidden>Share</button>
+</div>
+<dialog id="peek" aria-label="Pubmat preview" closedby="any">
+  <canvas id="big" width="1080" height="1350" role="img" aria-label="Pubmat preview"></canvas>
+  <div class="actions"><button type="button" class="primary" id="peekDl">⬇ Download</button><button type="button" id="peekClose">Back to the form</button></div>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=74ae247b"></script>
+<script src="app.js?v=6b05a8d8"></script>
 </body>
 </html>

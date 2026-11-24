@@ -27,7 +27,7 @@ const EXAMPLE = {
   chip: 'Impact Immersion', kicker: 'JCI Cebu community project', h1: 'Medical', h2: 'Mission', theme: 'sky',
   date: '2026-11-22', t1: '07:30', t2: '12:30', venue: 'Tabunok Central Elementary School', area: 'Tabunok, Talisay City', meet: '', outfit: 'White Community Shirt',
   partners: 'My Mountain Mover and its Greater Heights Foundation', pLabel: 'In partnership with',
-  hz: 100, hx: 50, hy: 35, tag: 'Gratitude in motion',
+  hz: 100, hx: 50, hy: 35, tag: 'Gratitude in motion', lead: '', pts: '',
   recOn: true, ry: 30, rLabel: 'On the record', rTitle: 'From San Remigio\nto Tabunok.', rBody: 'Our Impact Immersion went north in May 2025. This Sunday, it comes to Talisay City.',
   band: 'See you in', bandHi: 'Tabunok!', hashtag: 'ImpactImmersion',
 };
@@ -36,7 +36,7 @@ const BLANK = {
   chip: 'Community project', kicker: 'JCI Cebu', h1: 'Project', h2: 'Title', theme: 'sky',
   date: '', t1: '', t2: '', venue: '', area: '', meet: '', outfit: '', partners: '', pLabel: 'In partnership with',
   hz: 100, hx: 50, hy: 40, tag: 'Gratitude in motion', recOn: false, ry: 40, rLabel: 'On the record', rTitle: '', rBody: '',
-  band: 'See you', bandHi: 'there!', hashtag: 'JCICebu', pname: '', pill: '',
+  band: 'See you', bandHi: 'there!', hashtag: 'JCICebu', pname: '', pill: '', lead: '', pts: '',
 };
 
 // Post-op example: the San Remigio Impact Immersion group photo (May 2025). No numbers: only real counts go on.
@@ -49,6 +49,14 @@ const MODE_DEFAULTS = {
   announce: { kicker: 'JCI Cebu community project', band: 'See you', bandHi: 'there!', pLabel: 'In partnership with' },
   recap: { kicker: 'Successfully implemented', band: 'SALAMAT to everyone', bandHi: 'who made it happen!', pLabel: 'Thank you to our partners' },
   photos: { kicker: 'Successfully implemented', band: 'SALAMAT to everyone', bandHi: 'who made it happen!', pLabel: 'Thank you to our partners' },
+};
+// Quick starts for the announcement: only labels, never facts
+const STARTS = {
+  project:    { chip: 'Community project', kicker: 'JCI Cebu community project', band: 'See you', bandHi: 'there!' },
+  training:   { chip: 'Training', kicker: 'JCI Cebu training', band: 'See you', bandHi: 'there!' },
+  oti:        { chip: 'Recruitment', kicker: 'JCI Cebu · open to non-members', h1: 'Opportunity', h2: 'to Impact', band: 'Bring a', bandHi: 'friend!', hashtag: 'OpportunityToImpact' },
+  call:       { chip: 'Call for volunteers', kicker: 'JCI Cebu', band: 'Message us to', bandHi: 'join!' },
+  fellowship: { chip: 'Fellowship', kicker: 'JCI Cebu fellowship night', band: 'See you', bandHi: 'there!' },
 };
 // Confirmed 2027 partners (same roster as the footer), so nobody has to hunt for a logo file.
 const PARTNER_LOGOS = [
@@ -180,6 +188,28 @@ function drawLeft(T, fs, g, draw) {
   const L = [state.h1, state.h2].map(s => (s || '').trim()).filter(Boolean);
   F(800, fs);
   L.forEach((l, i) => { if (draw) { ctx.fillStyle = i === 1 ? T.accent : T.ink; txt(l, x, y + fs * .8, -.035 * fs); } y += fs * .94; });
+
+  if (state.mode === 'announce') {
+    const lead = (state.lead || '').trim();
+    if (lead) {
+      y += 14 * g; F(500, 24);
+      for (const l of wrap(lead, 530).slice(0, 4)) { if (draw) { ctx.fillStyle = T.muted; txt(l, x, y + 23); } y += 33; }
+    }
+    const pts = String(state.pts || '').split('\n').map(s => s.trim()).filter(Boolean).slice(0, 4);
+    if (pts.length) {
+      y += 16 * g;
+      for (const p of pts) {
+        F(700, 23); const ls = wrap(p, 490).slice(0, 2);
+        if (draw) {
+          ctx.fillStyle = T.accent; ctx.beginPath(); ctx.arc(x + 13, y + 15, 13, 0, 7); ctx.fill();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          ctx.beginPath(); ctx.moveTo(x + 7, y + 15.5); ctx.lineTo(x + 11.5, y + 20); ctx.lineTo(x + 19.5, y + 10.5); ctx.stroke();
+        }
+        ls.forEach(l => { if (draw) { ctx.fillStyle = T.ink; txt(l, x + 38, y + 23); } y += 31; });
+        y += 7 * g;
+      }
+    }
+  }
 
   y = drawPartners(T, x, y, g, draw, 540);
 
@@ -580,7 +610,13 @@ function photosCaption() {
 }
 function draw1(t, x, y, col) { ctx.fillStyle = col; txt(t, x, y); return true; }
 
-function render() {
+const mini = $('#mini'), big = $('#big'), peek = $('#peek');
+function syncMini() {
+  if (mini) { const m = mini.getContext('2d'); m.imageSmoothingQuality = 'high'; m.clearRect(0, 0, mini.width, mini.height); m.drawImage(cv, 0, 0, mini.width, mini.height); }
+  if (big && peek && peek.open) big.getContext('2d').drawImage(cv, 0, 0);
+}
+function render() { renderCore(); syncMini(); }
+function renderCore() {
   const T = THEMES[state.theme] || THEMES.sky, recOn = !!state.recOn;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingQuality = 'high'; ctx.clearRect(0, 0, W, H); ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
   if (state.mode === 'photos') { renderPhoto(sel); if (!captionEdited) $('#cap').value = caption(); return; }
@@ -713,6 +749,9 @@ function caption() {
   const chip = (state.chip || '').trim();
   const lines = [];
   lines.push(chip ? `${chip}: ${title}` : title);
+  if ((state.lead || '').trim()) lines.push('', state.lead.trim());
+  const cpts = String(state.pts || '').split('\n').map(s => s.trim()).filter(Boolean).slice(0, 4);
+  if (cpts.length) lines.push('', ...cpts.map(p => '✅ ' + p));
   if ((state.partners || '').trim()) lines.push('', `JCI Cebu, together with ${state.partners.trim()}, invites you to join us.`);
   lines.push('');
   const d = fmtDate(state.date), t = fmtTime(state.t1, state.t2), place = [state.venue, state.area].map(s => (s || '').trim()).filter(Boolean).join(', ');
@@ -956,6 +995,24 @@ $('#copy').onclick = async () => {
   try { await navigator.clipboard.writeText($('#cap').value); toast(state.mode === 'bodm' ? 'Attendance list copied' : 'Caption copied'); }
   catch { $('#cap').select(); toast('Select and copy the text'); }
 };
+/* ---------- quick starts ---------- */
+document.querySelectorAll('#starts button').forEach(b => { b.onclick = () => {
+  Object.assign(state, STARTS[b.dataset.start]); captionEdited = false; fillForm(); render(); toast(`${b.textContent} labels filled in`);
+}; });
+
+/* ---------- phone: the bar with the mini pubmat, and the full-screen look ---------- */
+const dock = $('#dock');
+if (dock && 'IntersectionObserver' in window) {
+  new IntersectionObserver(([e]) => { dock.hidden = e.isIntersecting; document.body.classList.toggle('docked', !e.isIntersecting); }, { threshold: .25 }).observe(cv);
+  $('#dockDl').onclick = () => $('#dl').click();
+  $('#peekDl').onclick = () => $('#dl').click();
+  if (!$('#share').hidden) { const s = $('#dockShare'); s.hidden = false; s.onclick = () => $('#share').click(); }
+  $('#dockPeek').onclick = () => { render(); big.getContext('2d').drawImage(cv, 0, 0); peek.showModal(); };
+  $('#peekClose').onclick = () => peek.close();
+  peek.addEventListener('click', e => { if (e.target === peek) peek.close(); });
+}
+const pickBox = $('#pickBox'); if (pickBox) pickBox.open = matchMedia('(min-width:900px)').matches;
+
 let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
 
 /* ---------- start ---------- */
