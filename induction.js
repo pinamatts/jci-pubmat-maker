@@ -23,7 +23,7 @@ function daysToGo() { // counted on the Cebu calendar, not the phone's
 
 const DEFAULTS = {
   title: { title: 'Dress Code', details: '# Ladies\nBlack or blue gown\n\n# Gentlemen\nSuit and tie\n\n# JCI Cebu members\nRoyal blue tie' },
-  letter: { lhead: 'Announcement', dropcap: true, body: 'We look forward to welcoming you to our 79th Induction and Turnover Ceremonies on December 12, 2026 at Mactan Expo.\n\nAs we finalize our preparations, we would greatly appreciate your confirmation at first79.jcicebu.org.\n\nYour presence would truly make the occasion more meaningful.' },
+  letter: { lhead: 'Announcement', dropcap: true, body: 'We look forward to welcoming you to our 79th Induction and Turnover Ceremonies on December 12, 2026, 7:00 PM, at Mactan Expo.\n\nAs we finalize our preparations, we would greatly appreciate your confirmation at first79.jcicebu.org.\n\nYour presence would truly make the occasion more meaningful.' },
   count: { title: '', clabel: 'Days to go', cline: 'See you at Mactan Expo' },
   person: { title: 'Guest of Honour', pname: 'Full Name', prole: 'Title or office\nOrganization', py: 30, pz: 100 },
   prog: { title: 'Programme', rows: '# Saturday, 12 December\n11:00 AM | Sister Chapter Lunch | Mactan Newtown\n1:00 PM | National Anthem video shoot | Mactan Expo\n5:00 PM | Benefit Concert | Mactan Expo\n7:00 PM | Induction and Turnover Ceremonies | Mactan Expo' },
@@ -32,7 +32,7 @@ const DEFAULTS = {
 const STARTS = {
   title: {
     'Dress code': DEFAULTS.title,
-    'Save the date': { title: 'Save the Date', details: '# You are invited\n79th Induction and Turnover Ceremonies\n\nSaturday, 12 December 2026\nMactan Expo, Mactan Newtown' },
+    'Save the date': { title: 'Save the Date', details: '# You are invited\n79th Induction and Turnover Ceremonies\n\nSaturday, 12 December 2026\n7:00 PM\nMactan Expo, Mactan Newtown' },
     'Reminder': { title: 'Reminder', details: '# For our guests\nFirst line\nSecond line\n\n# Questions\nMessage the JCI Cebu page' },
     'Blank': { title: '', details: '' },
   },
@@ -214,9 +214,10 @@ function footer(fc, x0) { // JCI Cebu + SALAMAT | date and venue, centred on the
   ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(x, fc - 34, 2, 68); x += 24;
   ctx.fillStyle = '#fff'; F(700, 25); txt(EVENT.date, x, fc - 1, .2); F(700, 15.5); txt(EVENT.venue, x, fc + 22, .2);
 }
+// Level Q, not H: it keeps the squares bigger, and big squares survive Facebook's compression better in the same space.
 function qrMatrix(url) {
   if (!window.qrcode || !url) return null;
-  try { const q = window.qrcode(0, 'H'); q.addData(url); q.make(); return { n: q.getModuleCount(), dark: (r, c) => q.isDark(r, c) }; } catch { return null; }
+  try { const q = window.qrcode(0, 'Q'); q.addData(url); q.make(); return { n: q.getModuleCount(), dark: (r, c) => q.isDark(r, c) }; } catch { return null; }
 }
 function drawQR(m, x, y, size) { // white tile with the code; the modules land on whole pixels so phones can read it
   const quiet = 4, cells = m.n + quiet * 2, px = Math.floor(size * U / cells), full = px * cells;
@@ -241,7 +242,7 @@ function kTitle(top, bot) {
     }
     return y - y0;
   }
-  let s = 1; while (s > .5 && block(s, 0, false) > bot - top) s -= .04;
+  let s = 1.25; while (s > 1 && block(s, 0, false) > (bot - top) * .66) s -= .05; while (s > .5 && block(s, 0, false) > bot - top) s -= .04;
   block(s, top + clamp((bot - top - block(s, 0, false)) * .36, 0, 300), true);
 }
 
@@ -377,7 +378,6 @@ function kKey(top, B) { // the cover: the gold 79 by itself
   const total = h + fs * 3.1 + (line ? 70 : 0), y = ly + 60 + Math.max(0, (free - total) * .42);
   glow(CX, y + h * .5, w * .9, '214,185,85', .12);
   ctx.drawImage(A.g79, CX - w / 2, y, w, h);
-  sparkle(CX - w * .36, y + h * .03, w * .075); sparkle(CX + w * .47, y + h * .22, w * .04, .9); sparkle(CX - w * .34, y + h * .97, w * .035, .85);
   F(700, fs); ctx.save(); ctx.fillStyle = GOLD; shadow('rgba(214,185,85,.45)', 10); ctext('79TH INDUCTION AND', CX, y + h + fs * 1.5); ctext('TURNOVER CEREMONIES', CX, y + h + fs * 2.72); ctx.restore();
   if (line) { F(700, 29); ctx.fillStyle = '#fff'; ctext(line, CX, y + h + fs * 2.72 + 62); }
   ctx.fillStyle = '#fff'; F(700, 30); ctext(EVENT.date, CX, foot, .3); F(700, 19); ctext(EVENT.venue, CX, foot + 31, .2);
@@ -404,10 +404,13 @@ function renderCore() {
     let bot = fc - 64;
     const m = state.qr[state.kind] ? qrMatrix((state.qrUrl || '').trim()) : null;
     if (m) {
-      const q = 178, qx = W - (story ? 48 : 36) - q, qy = fc + 36 - q, lab = (state.qrLabel || '').trim().toUpperCase();
+      const q = clamp(Math.ceil(6 * (m.n + 8) / U) + 2, 178, 264), qx = W - (story ? 48 : 36) - q, // every square at least 6 pixels in the saved file, so it still scans at half size
+      qy = fc + 36 - q, lab = (state.qrLabel || '').trim().toUpperCase();
+      F(700, 13.5); const ls = lab ? wrap(lab, q - 6, .3) : [], pt = qy - (ls.length ? 22 + ls.length * 17 : 12);
+      ctx.save(); shadow('rgba(0,0,0,.45)', 18, 0, 6); rr(qx - 12, pt, q + 24, qy + q + 12 - pt, 14); ctx.fillStyle = 'rgba(0,14,34,.9)'; ctx.fill(); ctx.restore();
       drawQR(m, qx, qy, q);
-      F(700, 13.5); const ls = lab ? wrap(lab, q + 30, .3) : []; ctx.fillStyle = '#fff'; ls.forEach((l, i) => ctext(l, qx + q / 2, qy - 12 - (ls.length - 1 - i) * 17, .3));
-      bot = Math.min(bot, qy - 12 - ls.length * 17 - 16);
+      F(700, 13.5); ctx.fillStyle = '#fff'; ls.forEach((l, i) => ctext(l, qx + q / 2, qy - 12 - (ls.length - 1 - i) * 17, .3));
+      bot = Math.min(bot, pt - 18);
     }
     const top = lockEnd + (small ? 18 : 30);
     ({ title: kTitle, letter: kLetter, count: kCount, person: kPerson, prog: kProg })[state.kind](top, bot);
@@ -420,7 +423,7 @@ function syncMini() {
 }
 
 /* ---------- caption ---------- */
-const TAIL = () => `79th Induction and Turnover Ceremonies\n12 December 2026 · Mactan Expo, Mactan Newtown\nDetails: ${EVENT.site}\n\n#SALAMAT79 #GratitudeInMotion #JCICebu #ChampionGenuineImpact`;
+const TAIL = () => `79th Induction and Turnover Ceremonies\n12 December 2026, 7:00 PM · Mactan Expo, Mactan Newtown\nDetails: ${EVENT.site}\n\n#SALAMAT79 #GratitudeInMotion #JCICebu #ChampionGenuineImpact`;
 function caption() {
   const k = state.kind, t = (state.titles[k] || '').trim(); let top = '';
   if (k === 'title') top = [t, state.details.split('\n').map(l => l.trim().replace(/^#\s*/, '')).join('\n').replace(/\n{3,}/g, '\n\n').trim()].filter(Boolean).join('\n\n');
@@ -455,7 +458,7 @@ function syncNotes() {
   $('#sizeNote').textContent = SIZES[state.size].note;
   $('#qrFields').hidden = !state.qr[state.kind];
   const note = $('#qrNote'), on = state.qr[state.kind]; note.hidden = !on;
-  if (on) { const m = qrMatrix((state.qrUrl || '').trim()); note.textContent = !window.qrcode ? 'The QR tool did not load. Check your internet and reload the page.' : !m ? 'Type the link to make the QR code.' : m.n > 41 ? 'That link is long, so the code is very fine and may not scan. Use a shorter link.' : 'Scan it with your own phone before you post.'; }
+  if (on) { const m = qrMatrix((state.qrUrl || '').trim()); note.textContent = !window.qrcode ? 'The QR tool did not load. Check your internet and reload the page.' : !m ? 'Type the link to make the QR code.' : m.n > 37 ? 'That link is long, so the code is very fine and may not scan. Use a shorter link.' : 'Scan it with your own phone before you post.'; }
 }
 let raf = 0, to = 0;
 function go() { cancelAnimationFrame(raf); clearTimeout(to); render(); }
