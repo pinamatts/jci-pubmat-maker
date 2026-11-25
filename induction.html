@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#00172f">
+<title>79th Induction Pubmat Maker · JCI Cebu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;700&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#00122a;--panel:#061f42;--panel2:#0a2850;--line:#1f3d6e;--ink:#f1f4fa;--mute:#9fb0cf;--gold:#d2b658;--gold2:#a8861f;accent-color:var(--gold)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 'Plus Jakarta Sans',system-ui,sans-serif}
+a{color:var(--gold)}
+header{padding:20px 16px 8px;max-width:1240px;margin:0 auto}
+header .kick{margin:0 0 4px;color:var(--gold);font-weight:800;font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+header h1{margin:0;font-size:26px;letter-spacing:-.02em}
+header p{margin:6px 0 0;color:var(--mute);max-width:70ch}
+.back{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-weight:700;text-decoration:none;margin-top:10px}
+main{max-width:1240px;margin:0 auto;padding:12px 16px 48px;display:grid;gap:24px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){main{grid-template-columns:minmax(0,1fr) minmax(0,460px)} .preview{position:sticky;top:16px;align-self:start;order:2}}
+.preview canvas{width:100%;height:auto;max-height:78vh;object-fit:contain;display:block;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.55);background:#00172f;margin:0 auto}
+@media (min-width:900px){.preview canvas{width:auto;max-width:100%}}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+button,.btn{font:inherit;font-weight:700;border-radius:12px;padding:12px 16px;cursor:pointer;background:var(--panel2);color:var(--ink);border:1px solid var(--line);display:inline-flex;align-items:center;gap:8px;min-height:44px}
+button.primary{background:var(--gold);border-color:var(--gold);color:#1a1503}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.note{color:var(--mute);font-size:14px;margin:10px 0 0}
+form{display:grid;gap:16px}
+fieldset{margin:0;border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:16px;display:grid;gap:12px;min-width:0}
+legend{font-weight:800;padding:0 6px;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--gold)}
+label{display:grid;gap:6px;font-weight:600;font-size:14px;color:#d5def0}
+label small{font-weight:500;color:var(--mute)}
+input[type=text],input[type=url],input[type=number],select,textarea{font:inherit;font-size:16px;color:var(--ink);background:#02142d;border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-height:44px}
+textarea{min-height:150px;resize:vertical;line-height:1.5}
+textarea.tall{min-height:220px}
+input[type=range]{width:100%}
+.row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.file{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.file input{max-width:100%;font-size:14px;color:var(--mute)}
+.switch{display:flex;align-items:center;gap:10px;font-weight:700}
+.switch input{width:22px;height:22px;flex:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.cards label{display:block;cursor:pointer;position:relative}
+.cards input{position:absolute;opacity:0}
+.cards span{display:block;height:100%;border:2px solid var(--line);border-radius:14px;padding:11px 12px;background:var(--panel2)}
+.cards b{display:block;font-size:15.5px;color:var(--ink)}
+.cards small{display:block;margin-top:2px;font-size:12.5px;line-height:1.35}
+.cards input:checked+span{border-color:var(--gold);background:#0f3260}
+.cards input:focus-visible+span{outline:3px solid #fff;outline-offset:2px}
+.cards.looks i{display:block;height:46px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,.08)}
+.locked{display:flex;gap:10px;align-items:flex-start;background:#04264f;border:1px solid #1d4a86;border-radius:12px;padding:12px;color:#cfe0f7;font-size:14px}
+.warn{background:#2c2408;border:1px solid #6d5a17;border-radius:12px;padding:10px 12px;color:#f3e3a3;font-size:14px}
+.starts{display:flex;flex-wrap:wrap;gap:8px}
+.starts button{padding:8px 12px;min-height:40px;font-size:14px;border-radius:999px}
+footer{max-width:1240px;margin:0 auto;padding:0 16px 40px;color:var(--mute);font-size:13px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#fff;color:#130F2D;font-weight:700;padding:10px 16px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:calc(100vw - 32px);text-align:center}
+.toast.on{opacity:1}
+[hidden]{display:none !important}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:10px;align-items:center;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(0,18,42,.97);border-top:1px solid var(--line)}
+.dock #dockPeek{padding:4px 12px 4px 4px;gap:10px;font-size:14px}
+.dock canvas{height:55px;width:auto;border-radius:5px;background:#00172f;display:block}
+.dock .primary{flex:1;justify-content:center}
+@media (min-width:900px){.dock{display:none}}
+@media (max-width:899px){
+  body.docked{padding-bottom:84px} body.docked .toast{bottom:96px}
+  header h1{font-size:22px}
+  .cards{grid-template-columns:1fr 1fr} .cards span{padding:10px} .cards b{font-size:14.5px} .cards small{font-size:12px}
+  .cards.looks,.cards.sizes{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+dialog#peek{border:0;padding:12px;background:#00122a;border-radius:14px;max-width:100vw;max-height:100dvh;color:var(--ink)}
+dialog#peek::backdrop{background:rgba(0,0,0,.8)}
+dialog#peek canvas{display:block;width:auto;height:auto;max-width:calc(100vw - 24px);max-height:calc(100dvh - 100px);border-radius:8px;background:#00172f;margin:0 auto}
+dialog#peek .actions{justify-content:center}
+</style>
+</head>
+<body>
+<header>
+  <p class="kick">12 December 2026 · Mactan Expo</p>
+  <h1>79th Induction Pubmat Maker</h1>
+  <p>For induction posts only. Every pubmat comes out in the official induction look: the gold 79, the navy night, and the date and venue at the bottom. Pick a kind, type your words, download.</p>
+  <a class="back" href="./">← All other pubmats (projects, recaps, BOD meetings)</a>
+</header>
+<main>
+  <section class="preview" aria-label="Preview">
+    <canvas id="cv" width="1448" height="2048" role="img" aria-label="Pubmat preview"></canvas>
+    <div class="actions">
+      <button class="primary" id="dl" type="button">⬇ Download pubmat</button>
+      <button id="share" type="button" hidden>Share</button>
+      <button id="copyImg" type="button" hidden>Copy pubmat</button>
+    </div>
+    <p class="note" id="sizeNote"></p>
+  </section>
+
+  <form id="f" autocomplete="off">
+    <fieldset>
+      <legend>1 · What are you posting?</legend>
+      <div class="cards" id="kinds">
+        <label><input type="radio" name="kind" value="title" checked><span><b>Title card</b><small>A big title and a few lines: dress code, reminders, venue.</small></span></label>
+        <label><input type="radio" name="kind" value="letter"><span><b>Announcement</b><small>A short letter on the velvet card, with a QR if you want.</small></span></label>
+        <label><input type="radio" name="kind" value="count"><span><b>Countdown</b><small>Days to go. It counts by itself.</small></span></label>
+        <label><input type="radio" name="kind" value="person"><span><b>Spotlight</b><small>One person with a photo: guest, speaker, host, officer.</small></span></label>
+        <label><input type="radio" name="kind" value="prog"><span><b>Programme</b><small>Times and what happens.</small></span></label>
+        <label><input type="radio" name="kind" value="key"><span><b>Key visual</b><small>The gold 79 by itself, for a cover or a teaser.</small></span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>2 · Your words</legend>
+      <div class="starts" id="starts" aria-label="Quick starts"></div>
+
+      <label data-only="title count person prog">Title <small data-only="title prog">keep it short; it is set in capitals</small><small data-only="count person">optional small line on top</small>
+        <input type="text" name="title" maxlength="60"></label>
+
+      <label data-only="title">Details <small>one line each. Start a line with # to make it a gold heading. Leave an empty line for a gap.</small>
+        <textarea name="details" class="tall"></textarea></label>
+
+      <label data-only="letter">Heading
+        <input type="text" name="lhead" maxlength="40"></label>
+      <label data-only="letter">Message <small>leave an empty line between paragraphs. Shorter reads better: about 60 words.</small>
+        <textarea name="body" class="tall"></textarea></label>
+      <label class="switch" data-only="letter"><input type="checkbox" name="dropcap"> Fancy first letter</label>
+
+      <div class="row" data-only="count">
+        <label>Days to go <small>counted from today in Cebu; change it if you post ahead</small>
+          <input type="number" name="days" min="0" max="999" inputmode="numeric"></label>
+        <label>Words under the number
+          <input type="text" name="clabel" maxlength="30"></label>
+      </div>
+      <label data-only="count">Line below <small>optional</small>
+        <input type="text" name="cline" maxlength="90"></label>
+
+      <div data-only="person" style="display:grid;gap:12px">
+        <div class="file"><label class="btn" for="photoIn">📷 Choose photo</label><input id="photoIn" type="file" accept="image/*" hidden><span class="note" id="photoNote" style="margin:0">No photo yet</span></div>
+        <div class="row">
+          <label>Move photo up / down <input type="range" name="py" min="0" max="100"></label>
+          <label>Zoom <input type="range" name="pz" min="100" max="220"></label>
+        </div>
+        <label>Name <input type="text" name="pname" maxlength="60"></label>
+        <label>Role and details <small>one line each</small>
+          <textarea name="prole"></textarea></label>
+      </div>
+
+      <label data-only="prog">Programme <small>one row per line: time | what | where. The "where" is optional. Start a line with # for a day heading.</small>
+        <textarea name="rows" class="tall"></textarea></label>
+      <p class="warn" data-only="prog">Check the times with the induction chair before you post. Programmes change.</p>
+
+      <label data-only="key">Line under the 79 <small>optional</small>
+        <input type="text" name="kline" maxlength="60"></label>
+    </fieldset>
+
+    <fieldset data-only="title letter prog person">
+      <legend>QR code</legend>
+      <label class="switch"><input type="checkbox" name="qrOn"> Put a QR code in the corner</label>
+      <div class="row" id="qrFields">
+        <label>Link <input type="url" name="qrUrl" inputmode="url" placeholder="https://"></label>
+        <label>Words above it <input type="text" name="qrLabel" maxlength="40"></label>
+      </div>
+      <p class="note" id="qrNote" style="margin:0">Scan it with your own phone before you post.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>3 · Look and size</legend>
+      <div class="cards looks" id="looks">
+        <label><input type="radio" name="look" value="midnight" checked><span><i style="background:linear-gradient(160deg,#052650,#00172f 60%)"></i><b>Midnight</b></span></label>
+        <label><input type="radio" name="look" value="edge"><span><i style="background:linear-gradient(135deg,#0d3a78 0 22%,#c9a94e 22% 24%,#00172f 24% 76%,#c9a94e 76% 78%,#0a2f63 78%)"></i><b>Gold edge</b></span></label>
+        <label><input type="radio" name="look" value="star"><span><i style="background:radial-gradient(circle at 30% 30%,#d2b658 0 3%,transparent 4%),radial-gradient(circle at 70% 60%,#d2b658 0 2%,transparent 3%),radial-gradient(circle at 55% 25%,#d2b658 0 1.5%,transparent 2.5%),linear-gradient(160deg,#171c44,#070f25)"></i><b>Starlight</b></span></label>
+      </div>
+      <div class="cards sizes" id="sizes">
+        <label><input type="radio" name="size" value="poster" checked><span><b>Poster</b><small>Same as the Canva. Facebook, group chats.</small></span></label>
+        <label><input type="radio" name="size" value="feed"><span><b>Feed 4:5</b><small>Instagram and Facebook feed.</small></span></label>
+        <label><input type="radio" name="size" value="story"><span><b>Story</b><small>IG and FB stories, My Day.</small></span></label>
+      </div>
+      <label class="switch"><input type="checkbox" name="partners"> Partners strip at the bottom <small style="font-weight:500;color:var(--mute)">our rule for every chapter pubmat</small></label>
+      <div class="locked"><span aria-hidden="true">🔒</span><span>Built in on every pubmat: the gold 79 with “79th Induction and Turnover Ceremonies”, the JCI Cebu and SALAMAT logos, and <strong>12 December 2026 · Mactan Expo | Mactan Newtown</strong>.</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>4 · Caption</legend>
+      <label>Ready to paste <small>written from the form; you can edit it</small><textarea id="cap"></textarea></label>
+      <div class="actions" style="margin-top:0"><button id="copy" type="button">Copy caption</button><button id="reset" type="button">Start this kind again</button></div>
+    </fieldset>
+  </form>
+</main>
+<footer>JCI Cebu · 79th Induction and Turnover Ceremonies. Check names, times and titles with the induction chair before posting.</footer>
+<div class="dock" id="dock" hidden>
+  <button type="button" id="dockPeek" aria-label="See the full pubmat"><canvas id="mini" width="156" height="220" aria-hidden="true"></canvas>See pubmat</button>
+  <button type="button" class="primary" id="dockDl">⬇ Download</button>
+  <button type="button" id="dockShare" hidden>Share</button>
+</div>
+<dialog id="peek" aria-label="Pubmat preview" closedby="any">
+  <canvas id="big" width="1448" height="2048" role="img" aria-label="Pubmat preview"></canvas>
+  <div class="actions"><button type="button" class="primary" id="peekDl">⬇ Download</button><button type="button" id="peekClose">Back to the form</button></div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="induction.js?v=1"></script>
+</body>
+</html>
